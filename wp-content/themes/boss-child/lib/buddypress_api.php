@@ -230,6 +230,7 @@
     return array(
         '/wp-json/controller/v1/*',
 		'/wp-json/controller/v2/send_push/*',
+		'/wp-json/controller/v2/login_user/*',
 		'/wp-json/controller/v2/upload_image/*'		
     );});
 	
