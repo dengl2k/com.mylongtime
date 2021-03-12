@@ -90,7 +90,8 @@ add_action('wp_head', 'add_favicon_child');
 $sage_includes = [ 
    'lib/buddy_scripts.php', // Buddyboss Overrides
    'lib/pwa_scripts.php', // PWA
-   'lib/common_functions.php' // Common functions
+   'lib/common_functions.php', //Common functions
+   'lib/buddypress_api.php' // REST API
 ];
 
 foreach ($sage_includes as $file) {
@@ -108,14 +109,9 @@ add_filter('use_block_editor_for_post', '__return_false', 10);
 add_action( 'wp_enqueue_scripts', 'remove_block_css', 100 );
 function remove_block_css() {
 	wp_dequeue_style( 'wp-block-library' ); // WordPress core
-}
-/*02.02.2021 For Test IFrame Login. Not needed anymore?	
+	
 function add_header_xua() {
 	header( 'Content-Security-Policy: frame-ancestors FULL-URL' );
 }
-add_action( 'send_headers', 'add_header_xua' );*/
-//02.02.21
-function child_remove_parent_function() {
-    remove_action( 'wp_head', 'boss_generate_option_css', 99 );
+add_action( 'send_headers', 'add_header_xua' );
 }
-add_action( 'wp_loaded', 'child_remove_parent_function' );

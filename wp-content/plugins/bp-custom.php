@@ -1,11 +1,12 @@
 <?php
+require 'includes/buddypress_api.php';
 require 'includes/buddypress_membertypes.php';
 require 'includes/profile_calendar.php';
 require 'includes/profile_age.php';
 require 'includes/buddypress_friends.php';
 
 //04.05.2020 Media Press gives index warnig when setings are saved
-error_reporting(E_ALL ^  E_NOTICE); 
+//error_reporting(E_ALL ^  E_NOTICE); 
 
 /*
  * Paste in your theme functions.php or in bp-custom.php.

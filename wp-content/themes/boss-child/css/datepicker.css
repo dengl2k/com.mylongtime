@@ -1,0 +1,268 @@
+
+.companion-date-picker legend {
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: inherit;
+    color: #333;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+h3.calendar-header {
+    position: relative;
+    top: -30px;
+    margin-bottom: 0!important
+}
+
+.companion-calendar {
+    border: 1px solid #ddd;
+    padding: 1em 1em 0;
+    margin: 0 0 1em;
+}
+
+.companion-calendar fieldset {
+    margin: 0 0 1em;
+    line-height: 2.25em
+}
+
+.companion-calendar fieldset .picker.hasDatepicker {
+    line-height: 1em;
+    margin-bottom: 1em
+}
+
+.companion-calendar fieldset input {
+    width: 100%
+}
+
+.companion-calendar fieldset input.error {
+    border-color: red
+}
+
+.companion-calendar fieldset legend small {
+    text-decoration: underline;
+    padding-left: 1em;
+    color: #999;
+    cursor: pointer;
+    display: none
+}
+
+.companion-calendar fieldset label {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 1.5em;
+    width: 25%
+}
+
+.companion-calendar fieldset label span {
+    display: block;
+    font-size: .75em;
+    color: #999;
+    padding: 0 2px
+}
+
+.companion-calendar .wc-bookings-booking-cost {
+    background: #eee;
+    border-top: 1px solid #ddd;
+    position: relative;
+    margin: 0 -1em;
+    padding: 1em
+}
+
+.companion-date-picker .ui-datepicker {
+    padding: 0;
+    width: auto;
+    /* <10.03.2019*/
+    max-width: 700px;
+    /* 10.03.2019>*/	
+}
+
+.companion-date-picker .ui-widget-content {
+    border: 0;
+    background: #fff;
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, .19);
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .19);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .19)
+}
+
+.companion-date-picker .ui-datepicker-header {
+    padding: 0;
+    overflow: hidden;
+    text-transform: uppercase;
+    border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    -moz-border-radius: 4px 4px 0 0;
+    background-color: #999;
+    background-image: none;
+    background-image: -moz-linear-gradient(bottom, #999 0, #aaa 100%);
+    background-image: -o-linear-gradient(bottom, #999 0, #aaa 100%);
+    background-image: -webkit-linear-gradient(bottom, #999 0, #aaa 100%);
+    background-image: linear-gradient(bottom, #999 0, #aaa 100%);
+    border: 0;
+    border-top: 1px solid #999;
+    color: #fff
+}
+
+.companion-date-picker .ui-datepicker-header .ui-state-hover {
+    background: 0 0;
+    border-color: transparent;
+    cursor: pointer
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-title {
+    line-height: 1em;
+    font-weight: 400;
+    padding: .75em 0
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-next,
+.companion-date-picker .ui-datepicker .ui-datepicker-prev {
+    top: -1px;
+    background: #999;
+    border-radius: 0;
+    font-weight: 400;
+    height: 2.5em;
+    width: 2em
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-next.ui-state-hover,
+.companion-date-picker .ui-datepicker .ui-datepicker-prev.ui-state-hover {
+    background: #aaa
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-prev {
+    left: 0;
+    border: 0
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-next {
+    right: 0;
+    border: 0
+}
+
+.companion-date-picker .ui-datepicker .ui-datepicker-next span,
+.companion-date-picker .ui-datepicker .ui-datepicker-prev span {
+    margin-top: -4px;
+    top: 40%
+}
+
+.companion-date-picker .ui-icon-circle-triangle-e {
+    background-image: url(../images/ui-icons_ffffff_256x240.png);
+    background-position: -32px 0
+}
+
+.companion-date-picker .ui-icon-circle-triangle-w {
+    background-image: url(../images/ui-icons_ffffff_256x240.png);
+    background-position: -96px 0
+}
+
+.companion-date-picker .ui-datepicker table {
+    margin: 0
+}
+
+.companion-date-picker .ui-datepicker th {
+    padding: .75em 0;
+    text-transform: uppercase;
+    color: #bbb;
+    font-weight: 400;
+    border-top: 1px solid #e6e6e6;
+    background: #fefefe;
+    display: table-cell
+}
+
+.companion-date-picker .ui-datepicker td {
+    border: 0;
+    border-top: 1px solid #e6e6e6;
+    border-right: 1px solid #e6e6e6;
+    background: #fefefe;
+    padding: 0!important;
+    display: table-cell
+}
+
+.companion-date-picker .ui-datepicker td:last-child {
+    border-right: 0
+}
+
+.companion-date-picker .ui-datepicker td .ui-state-default {
+    background: 0 0;
+    background-image: none!important;
+    border: 0;
+    color: #2b2b2b;
+    margin: 0;
+    font-weight: 400;
+    text-align: center;
+    padding: .75em 0
+}
+
+.companion-date-picker .ui-datepicker td a.ui-state-active,
+.companion-date-picker .ui-datepicker td a.ui-state-active.ui-state-hover {
+    background: #fefefe;
+    color: #b2b2b2;
+    background-image: none!important
+}
+
+.companion-date-picker .ui-datepicker td.fully_booked a,
+.companion-date-picker .ui-datepicker td.fully_booked span {
+    background-color: #c0392b!important;
+    background-image: none!important;
+    border-color: rgba(0, 0, 0, .1)!important;
+    color: #fff!important;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    /* <10.03.2019*/
+    opacity: 1!important;
+    /* 10.03.2019>*/
+}
+
+.companion-date-picker .ui-datepicker td.bookable a, .companion-date-picker .ui-datepicker td.ui-datepicker-unselectable.ui-state-disabled.bookable span {
+    background-color: #2ecc71!important;
+    background-image: none!important;
+    border-color: rgba(0, 0, 0, .1)!important;
+    color: #fff!important;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .1);	
+}
+
+.companion-date-picker .ui-datepicker td.partial_booked a {
+    background-color: #2ecc71!important;
+    background-image: none!important;
+    border-color: rgba(0, 0, 0, .1)!important;
+    color: #fff!important;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    position: relative;
+    z-index: 1
+}
+
+.companion-date-picker .ui-datepicker td.partial_booked a:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-top: 2.5em solid #C96259;
+    border-right: 2.5em solid transparent;
+    z-index: -10;
+    opacity: .75
+}
+
+.companion-date-picker .ui-datepicker td.ui-datepicker-current-day a {
+    /* <10.03.2019*/
+    /*background: #c0392b!important;*/
+    /* 10.03.2019>*/
+    opacity: 1!important   
+}
+.companion-date-picker .ui-datepicker td.ui-datepicker-other-month {
+    background: #eee
+}
+.companion-date-picker .ui-datepicker td.bookable-range .ui-state-default{
+    background: #239e57!important;
+    color: #fff
+}
+/* 10.03.2019*/
+.companion-date-picker .ui-datepicker td.ui-datepicker-unselectable.ui-state-disabled.fully_booked span{
+    background: #FF8C00!important;
+    opacity: 1!important
+}
+.companion-date-picker .ui-datepicker td.ui-datepicker-unselectable.ui-state-disabled.fully_booked, .companion-date-picker .ui-datepicker td.ui-datepicker-unselectable.ui-state-disabled.bookable{
+    opacity: 1!important
+}
+/* 10.03.2019>*/

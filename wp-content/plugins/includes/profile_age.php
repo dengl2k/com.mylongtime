@@ -28,8 +28,11 @@ function ui_custom_profile_display() {
 		$age = getAge($dob);
  
 		echo $age." years";
+	} else{
+		echo "&#8203";//no width space
 	}
 }
+
 //helper function
 function ui_bp_get_field_for_current_user( $field, $logged_in_user = false ) {
   

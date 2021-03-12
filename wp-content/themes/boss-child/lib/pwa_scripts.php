@@ -4,10 +4,11 @@ function add_pwa_scripts() {
 		return;
 ?>  
   <script>  
-	  
-	Notification.requestPermission(function(status) {
+	
+	//Removed notifcations 02.02.21
+	/*Notification.requestPermission(function(status) {
 		console.log('Notification permission status:', status);
-	});
+	});*/
 
 	function showNotification(title, message) {
 	  if ('Notification' in window) {
@@ -22,22 +23,25 @@ function add_pwa_scripts() {
 
   let deferredPrompt;
   btnAdd = document.getElementById("addHomeBtn");
+  
   if(btnAdd != null) {
 	  btnAdd.addEventListener('click', (e) => { 
 	  // hide our user interface that shows our A2HS button
 	  //btnAdd.style.display = 'none';
-	  // Show the prompt
+	  // Show the prompt	  
 	  
 	  if(deferredPrompt == null) {
-		  alert('App is already installed. Please check.');
+		  alert('Error: Try again or check if App is already installed');
 		  return;
 	  }
-	  showNotification("ThaiLongtime", "Succesfully installed");
+	  //Removed notifications 02.02.21
+	  //showNotification("ThaiLongtime", "Succesfully installed");
 	  deferredPrompt.prompt();
 	  // Wait for the user to respond to the prompt
 	  deferredPrompt.userChoice
 		.then((choiceResult) => {
 		  if (choiceResult.outcome === 'accepted') {
+			alert('App succesfully installed');
 			console.log('User accepted the A2HS prompt');
 		  } else {
 			console.log('User dismissed the A2HS prompt');
@@ -64,8 +68,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
   deferredPrompt = e;
   // Update UI notify the user they can install the PWA
   console.log("PWA Install hook"); 
-  if(btnAdd != null)
+  if(btnAdd != null) {
 	btnAdd.style.display = 'block';
+	btnAdd.style.color = '#000000';
+  }
 });
 </script>
 <?php

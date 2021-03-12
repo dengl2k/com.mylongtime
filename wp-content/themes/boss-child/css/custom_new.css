@@ -138,11 +138,6 @@ You're the boss, so have fun editing!
 	font-weight: 900;
 	content: "\f073";
 }
-#mobile-item-nav ul li#bp_better_messages_tab-personal-li:before {
-	font-family: 'Font Awesome 5 Free';
-	font-weight: 900;
-	content: "\f4ad";
-}
 /*img.boss-logo {
 	display: none !important;
 }*/
@@ -150,56 +145,36 @@ You're the boss, so have fun editing!
 .boss-mobile-porfile-menu {
 	display: none !important;
 }
-#buddypress #members-list {
-	display: flex;
-    flex-wrap: wrap;
-	width: 100%;
-}
-	
 #buddypress #members-list li {
 	clear: none !important;
-	display: block !important;
+	display: block;
 	box-sizing: border-box;
-	flex: 1 1 25%;	
-	max-width: 25%;
+	width: 25%;
 	padding-left: 1%;
 	padding-right: 1%;
 	padding-bottom: 1%;
 	padding-top: 1%;
 	border: 0;
 }
-@media screen and (min-width: 1200px) {
-	#buddypress #members-list li {
-		flex: 1 1 20%;
-		max-width: 20%;
-	}
-}
-@media screen and (max-width: 768px) {	
-	#buddypress #members-list li {
-		flex: 1 1 33%;
-		max-width: 33%;
-	}
-	
-	.item .item-title h3 {
-		font-size: 18px;
-		font-weight: 500;
-	}
-}
 #primary #members-list li .item-avatar img {
 	display: block;
-    width: 203px !important;
-    height: auto !important;	
+    width: unset !important;
+    height: unset !important;	
     max-width: 100%;	
+    height: auto;
 	-webkit-border-radius: unset !important;
     border-radius: unset !important;
 }
 #primary #members-list li .item-avatar {
+	display: flex;
+	justify-content: center;
+}
+#primary #members-list li .item-avatar {
     width: unset !important;
 	min-width: unset !important;
-	display: flex !important;	
+    display: flex;
 	justify-content: center;	
 }
-
 #primary #members-list .item-avatar a {
     height: unset !important;
 }
@@ -256,6 +231,20 @@ You're the boss, so have fun editing!
     font-weight: 900;
 	content: "\f302" !important;
 }
+@media screen and (max-width: 768px) {
+	#buddypress #members-list li {
+		width: 33%;	
+	}
+	.item .item-title h3 {
+		font-size: 18px;
+		font-weight: 500;
+	}
+}
+@media screen and (min-width: 1200px) {
+	#buddypress #members-list li {
+		width: 20%;	
+	}
+}
 #buddypress table tr td.label {
     border-right: 1px solid rgba(0,0,0,0.05);
     width: 25%;
@@ -271,48 +260,7 @@ You're the boss, so have fun editing!
 		width: 30% !important;	
 	}
 }
-/*07.07.20 Hide Upgrade Tab
-#upgrade-personal-li {
+/*07.07.20 Hide Apply Tab*/
+#apply-personal-li {
 	display: none;
-}*/
-/*12.07.20 Upgrade button, in progress*/
-.upgrade-personal-inprogress {
-	color: #fff;
-    font-size: 14px;
-    font-family: inherit;
-    letter-spacing: 1.2px;
-    padding: 12px 4px 11px;
-    background-color: #4dcadd;
-    border-radius: 4px;
-    display: inline-block;
-    width: 200px;
-    text-align: center;
-    box-sizing: border-box;
-    border: none;
-    line-height: 17px;
-    text-shadow: none;
-}
-
-.upgrade-table tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-.upgrade-table td:nth-child(1) {
-	white-space: nowrap;
-}
-/*10.12.20 Media gallery buttons*/
-div.mpp-item-actions.mpp-gallery-actions a, div.mpp-item-actions.mpp-media-actions.mpp-photo-actions a {	
-	background-color: white;
-	color: black;
-    border: 2px solid #30445C;
-    padding: 5px 5px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-}
-div.mpp-item-actions.mpp-gallery-actions a:hover, a:active {	
-	background-color: #30445C;
-	color: white;
-}
-#mpp-delete-gallery-agree {
-	opacity: 1 !important;	
 }

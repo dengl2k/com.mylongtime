@@ -148,10 +148,4 @@ function buddyboss_custom_login_scripts_child() {
 }
 
 add_action( 'login_head', 'buddyboss_custom_login_scripts_child', 2 );
-// 27.12.2020
-// Remove customizer CSS output
-add_action( 'after_setup_theme', 'remove_buddyboss_customizer_css', 999) ;
-function remove_buddyboss_customizer_css() {
-	remove_action('wp_head', 'boss_generate_option_css');
-}
 ?>
