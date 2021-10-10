@@ -1,11 +1,10 @@
 <?php
-require 'includes/buddypress_api.php';
 require 'includes/buddypress_membertypes.php';
 require 'includes/profile_calendar.php';
-require 'includes/profile_age.php';
+require 'includes/profile_functions.php';
 require 'includes/buddypress_friends.php';
 
-//04.05.2020 Media Press gives index warnig when setings are saved
+//04.05.2020 Media Press gives index warning when setings are saved, moved to buddypress_api
 //error_reporting(E_ALL ^  E_NOTICE); 
 
 /*
@@ -48,34 +47,6 @@ function buddypress_add_last_activity() {
 //add_action('bp_init', 'buddypress_add_last_activity' );
 
 
-//03.03.2018 Dont Show Export User Data
-add_filter( 'bp_settings_show_user_data_page', '__return_false' );
-
-//03.03.2018 Remove Profile Visibilty
-function bpfr_hide_visibility_tab() {	
-	if( bp_is_active( 'xprofile' ) )			
-		bp_core_remove_subnav_item( 'settings', 'profile' );
-}
-add_action( 'bp_ready', 'bpfr_hide_visibility_tab' );
-
-//01.05.2020 Hide calendar tab and protected fields under Profile->Edit
-function bpfr_hide_profile_field_group( $groups ) {
-
-    // Hide the profile group tabs on the edit interface for all non-admins.
-    if ( bp_is_user_profile_edit() && !current_user_can( 'bp_moderate' ) ) {
-        $remove_groups = array( 2, 3 ); // Put the IDs of the groups to remove here, separated by commas.
-        $new_set = array();
-        foreach ( $groups as $key => $group_obj ) {
-            if ( ! in_array( $group_obj->id, $remove_groups )  ) {
-                $new_set[] = $group_obj;
-            }
-        }
-        return $new_set;
-    }
-
-    return $groups;
-}
-add_filter( 'bp_profile_get_field_groups', 'bpfr_hide_profile_field_group' );
 //To test
 function peter_xprofile_data_after_save( $data ) {
 
@@ -114,13 +85,45 @@ if ( ! defined( 'BP_AVATAR_FULL_WIDTH' ) )
  
 if ( ! defined( 'BP_AVATAR_FULL_HEIGHT' ) )
     define( 'BP_AVATAR_FULL_HEIGHT', 165 ); //change this to default height for full avatar
+
 if ( ! defined( 'P_AVATAR_DEFAULT' ) )
 	define ( 'BP_AVATAR_DEFAULT', get_stylesheet_directory_uri() . '/images/gravatar.png' );
+
+if ( ! defined( 'P_AVATAR_DEFAULT' ) )	
+	define( 'BP_AVATAR_ORIGINAL_MAX_FILESIZE', 10485760);
 
 function bpcodex_change_notifications_nav_position() {
     buddypress()->members->nav->edit_nav( array(
         'position' => 999,
     ), 'notifications' );
+	if ( bp_is_user() && !is_super_admin() && !bp_is_my_profile() ) {
+		bp_core_remove_nav_item( 'friends' );
+	}
 }
 add_action( 'bp_setup_nav', 'bpcodex_change_notifications_nav_position', 100 );
+
+function bpdev_set_email_notifications_preference( $user_id ) {
+	if(bp_get_member_type($user_id) == "escort") {
+		return;
+	}
+    // I am putting all the notifications to no by default
+    // you can set the value to 'yes' if you want that notification to be enabled.
+    $settings_keys = array(      
+        'notification_messages_new_message'        => 'no'
+    ); 
+    foreach ( $settings_keys as $setting => $preference ) {
+	
+        bp_update_user_meta( $user_id, $setting, $preference );
+    } 
+}
+
+add_action( 'bp_core_activated_user', 'bpdev_set_email_notifications_preference' );
+
+add_filter( 'jwt_auth_whitelist', function ( $endpoints ) {
+    return array(
+        '/wp-json/controller/v1/*',
+		'/wp-json/controller/v2/test',
+		'/wp-json/controller/v2/send_push/*',
+		'/wp-json/controller/v2/line/*'			
+	);});	
 ?>

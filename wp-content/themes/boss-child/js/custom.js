@@ -118,10 +118,11 @@ jQuery(function($){
 				},
 				dataType: 'json',				
 				success: function (data) {
-					if(data=="true")
+					console.log(data);
+					if(data==true)
 						label.text("Calendar was updated");
 					else
-						label.text(data);					
+						label.text(JSON.stringify(data));					
 				},
 				error: function(qXHR, textStatus, errorThrown ) {
 					label.text(textStatus);

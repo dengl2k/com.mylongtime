@@ -240,13 +240,22 @@ You're the boss, so have fun editing!
     font-weight: 900;
 }
 /* Members */
-.menu-panel #nav-menu > ul li.menu-item-26 > a:not(.open-submenu):before {
+.menu-panel #nav-menu > ul li.menu-item-287 > a:not(.open-submenu):before {
     content: "\f500" !important;
     font-family: "Font Awesome 5 Free";
     margin-right: 10px;
     font-size: 19px;
     font-weight: 900;
 }
+/* Activity */
+.menu-panel #nav-menu > ul li.menu-item-291 > a:not(.open-submenu):before {
+    content: "\f10e" !important;
+    font-family: "Font Awesome 5 Free";
+    margin-right: 10px;
+    font-size: 19px;
+    font-weight: 900;
+}
+
 /*Under Profile->Activity always show Button to submit Activity Update*/
 #buddypress #whats-new-options {   
     display: block !important;
@@ -315,4 +324,49 @@ div.mpp-item-actions.mpp-gallery-actions a:hover, a:active {
 }
 #mpp-delete-gallery-agree {
 	opacity: 1 !important;	
+}
+/*19.02.21 Hide Visibility Toogle in User Profile <div> and Register Page <p>*/
+div.field-visibility-settings-notoggle, p.field-visibility-settings-notoggle {
+	display: none;
+}
+
+/*15.03.21 Hide Create Gallery*/
+li#gallery-my-gallery-personal-li + li#create-personal-li {
+	display: none;
+}
+div.mpp-item-actions.mpp-gallery-actions a.mpp-delete-gallery {
+	display: none;
+}
+
+/*03.05.21 Hide Gallery and Image Status*/
+label[for=mpp-media-status], label[for=mpp-media-status] + div
+{
+    display:none
+}
+/*29.07.21*/
+.message-icon:before {
+	content: "\f0e0";
+    font-family: "Font Awesome 5 Free";
+    margin-right: 10px;
+    font-size: 19px;
+    font-weight: 900;
+	color: #4dcadd;
+}
+.addfriend-icon:before {
+	content: "\f234";
+    font-family: "Font Awesome 5 Free";
+    margin-right: 10px;
+    font-size: 19px;
+    font-weight: 900;
+	color: #4dcadd;
+}
+blockquotes {
+  background: #f9f9f9;
+  border-left: 10px solid #78C0A8;
+  padding: 0.5rem 10px;
+  quotes: "\201C""\201D""\2018""\2019";
+  line-height: 2rem;
+}
+#buddypress div#item-header div.generic-button, #buddypress div#item-header a.button {
+    margin: 10px 0 0 0 !important;
 }

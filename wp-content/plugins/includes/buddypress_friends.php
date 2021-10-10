@@ -37,7 +37,7 @@ function child_bp_legacy_theme_ajax_addremove_friend() {
 	} elseif ( 'not_friends' == BP_Friends_Friendship::check_is_friend( bp_loggedin_user_id(), $friend_id ) ) {
 		check_ajax_referer( 'friends_add_friend' );
 
-		if(bp_get_total_friend_count( bp_loggedin_user_id()) >= 5 * getLevel(true) ) {
+		if(bp_get_total_friend_count( bp_loggedin_user_id()) >= 3 * getLevel(true) ) {
 			echo '<a style="max-width:100%" id="upgrade-' . esc_attr( $friend_id ) . '"  rel="upgrade" href="' . bp_loggedin_user_domain() . 'upgrade/' . '">' . __( 'Limit of friendships reached. Upgrade your account', 'buddypress' ) . '</a>';
 		}
 		else {
@@ -130,7 +130,8 @@ function upgrade_bp_custom_user_nav_item() {
     $args = array(
             'name' => __('Upgrade', 'buddypress'),
             'slug' => 'upgrade',
-            'default_subnav_slug' => 'upgrade',		
+            'default_subnav_slug' => 'upgrade',
+			'position' => 30,
 			'screen_function' => 'upgrade_bp_custom_user_nav_item_screen',
             'show_for_displayed_user' => false,		
             'item_css_id' => 'upgrade'
@@ -153,6 +154,9 @@ function upgrade_bp_custom_user_nav_item_screen() {
  * the function hooked to bp_template_content, this hook is in plugins.php
  */
 function upgrade_bp_custom_screen_content() {
+	$data = date("Y-m-d H:i:s") . ": Upgrade page visited by user: " . bp_loggedin_user_id();
+	file_put_contents("/opt/bitnami/apps/wordpress/htdocs/Upgrade_Log.txt", $data.PHP_EOL, FILE_APPEND);
+
 	$level = getLevel();
 	if(($level-0.5)==floor($level)) {
 		$btn_html = '<span class="upgrade-personal-inprogress">' . __('Upgrade in progress', 'buddypress') . '</span>';
@@ -170,7 +174,7 @@ function upgrade_bp_custom_screen_content() {
 	
 	?>	
 	<div style="margin-top:2rem"></div>	
-	<h5><?php _e('The Basic level is free. Each upgrade to the next level costs 100 EUR. There is no recurring payment, you keep your level for your lifetime.', 'buddypress');?></h5>
+	<h5><?php _e('The Basic level is free. Each upgrade costs 59 EUR. There is no monthly payment, you keep your membership for your lifetime.<br>The amount will be refunded if you book with <a href="https://thaisinglereisen.com">ThaiSingleReisen.com</a>', 'buddypress');?></h5>
 	<div style="overflow-x:auto;">
 		<table class="upgrade-table">
 			<tbody>
@@ -182,28 +186,26 @@ function upgrade_bp_custom_screen_content() {
 			<tr>
 				<td><?php _e('Basic', 'buddypress');?></td>
 				<td><?php _e('Free', 'buddypress');?></td>
-				<td><?php _e('Create and see profiles', 'buddypress');?></td>
+				<td><?php _e('See profiles of all girls. Send a maximum of 15 messages to all girls', 'buddypress');?></td>
 			</tr>
 			<tr>
-				<td><?php _e('Level 1', 'buddypress');?></td>
-				<td><?php _e('100 EUR', 'buddypress');?></td>
-				<td><?php _e('Create friend connections and send messages to <strong>5</strong> girls. Pay once, no annual fee.', 'buddypress');?></td>
-			</tr>
-			<tr>
-				<td><?php _e('Level 2', 'buddypress');?></td>
-				<td><?php _e('+100 EUR if you hold Level 1', 'buddypress');?></td>
-				<td><?php _e('Create friend connections and send messages to <strong>10</strong> girls. Pay once, no annual fee.', 'buddypress');?></td>
-			</tr>
-			<tr>
-				<td><?php _e('Level 3', 'buddypress');?></td>
-				<td><?php _e('+100 EUR if you hold Level 2', 'buddypress');?></td>
-				<td><?php _e('Create friend connections and send messages to <strong>15</strong> girls. Pay once, no annual fee.', 'buddypress');?></td>
-			</tr>
-			<tr>
-				<td><?php _e('Level n to &infin;&nbsp;', 'buddypress');?></td>
-				<td><?php _e('+100 EUR compared to Level n-1&nbsp;', 'buddypress');?></td>
-				<td><?php _e('Create friend connections and send messages to <strong>+5</strong> girls. Pay once, no annual fee.', 'buddypress');?></td>
-			</tr>
+				<td><?php _e('Member', 'buddypress');?></td>
+				<td><?php _e('59 EUR', 'buddypress');?></td>
+				<td><?php _e('Create friend connections and send unlimited messages to <strong>3</strong> more girls.<br>Exchange contact details and book the girl for your holiday.', 'buddypress');?></td>
+			</tr>			
+			</tbody>
+		</table>
+		<blockquotes>
+		Use the free account to chat with all of our companions and find out your favorite ones. If you have found your 3 ideal partners, upgrade your account for 59 EUR to exchange contacts and book her for your holiday.
+		</blockquotes>
+		<div style="margin-top:1rem"></div>	
+		<h4><?php _e('Benefits of becoming a member', 'buddypress');?></h4>
+		<table class="upgrade-table">
+			<tbody>
+				<tr><td>Send unlimited messages to your 3 favorite companions</td></tr>
+				<tr><td>Create friend connections to your 3 favorite companions</td></tr>
+				<tr><td>Exchange contact details including WhatsApp numbers and book the girls for your holiday</td></tr>
+				<tr><td>The booking fee at <a href="https://thaisinglereisen.com">ThaiSingleReisen.com</a> will be reduced.<br>You don't lose money</td></tr>
 			</tbody>
 		</table>
 	</div>
@@ -230,21 +232,44 @@ function wpse_sendmail() {
 	$subject = 'Upgrade request by user';
 	$body = 'New upgrade request by User: ' . bp_core_get_username(bp_loggedin_user_id()) . ' User ID: ' . bp_loggedin_user_id();
 	$headers = array('Content-Type: text/html; charset=UTF-8');
-	xprofile_set_field_data('Level', bp_loggedin_user_id(), getLevel() + 0.5);
-	wp_mail( $to, $subject, $body, $headers );
+	$currentLevel = getLevel();
+	//don't send twice
+	if(($currentLevel-0.5)!=floor($currentLevel)) {
+		xprofile_set_field_data('Level', bp_loggedin_user_id(), getLevel() + 0.5);
+		wp_mail( $to, $subject, $body, $headers );
+	}	
 }
 add_action( 'wp_ajax_siteWideMessage', 'wpse_sendmail' );
-	
-function buddydev_hide_public_button( $r ) {
 
-	if ( friends_check_friendship( bp_loggedin_user_id(), bp_displayed_user_id() ) || is_super_admin() ) {
-		return $r;
+//05.02.21 Added new	
+function filter_bp_get_add_friend_button($button) {	
+	if(!empty($button) && $button["id"]=="is_friend" && !is_super_admin()) {
+		return false;
 	}
-
-	return false;
+	return $button;
 }
-add_filter( 'bp_get_send_public_message_button', 'buddydev_hide_public_button' );
-add_filter( 'bp_get_send_message_button_args', 'buddydev_hide_public_button' );
+add_filter( 'bp_get_add_friend_button', 'filter_bp_get_add_friend_button', 999, 1 );
+
+//Filtered via activity-loop.php
+/*add_filter( 'bp_after_has_activities_parse_args', function( $args ) {
+	$filter_query = 
+		array(
+		array(
+			'column' => 'type',
+			'value' => array( 'friendship_accepted', 'friendship_created', 'new_member' ),
+			'compare' => 'NOT IN'
+			)
+			);	
+
+	$args['filter_query'] = $filter_query;
+	return $args;
+},99, 1 );	*/
+
+add_filter( 'bp_get_activity_show_filters_options', function( $filters ) {
+	unset( $filters['friendship_accepted,friendship_created'] );
+	unset( $filters['new_member'] );
+	return $filters;
+} );	
 
 // if not site admin, restrict PMs to friends
 function pp_check_message_recipients( $message_info ) {
@@ -258,7 +283,7 @@ function pp_check_message_recipients( $message_info ) {
 	$nf = 0; 
 		
 	foreach ( $recipients as $key => $recipient ) {
-		if ( ! in_array( $recipient->user_id, $friend_ids ) ) 
+		if ( ! in_array( $recipient->user_id, $friend_ids ) && $recipient->user_id!=1 ) //allow sending to admin
 			$nf++;
 	}
 
@@ -268,7 +293,8 @@ function pp_check_message_recipients( $message_info ) {
 	
 	return $message_info;
 }
-add_action( 'messages_message_before_save', 'pp_check_message_recipients' );
+//05.02.21 Removed because BPBetter Messages has own check
+//add_action( 'messages_message_before_save', 'pp_check_message_recipients' );
 
 
 /**
@@ -291,12 +317,51 @@ function filter_bp_core_render_message_content( $message_content ) {
 
 add_filter( 'bp_core_render_message_content', 'filter_bp_core_render_message_content', 10, 1 ); 
 
+function filter_bp_better_messages_can_send_message($allowed, $user_id, $thread_id) {
+	
+	//allow admin and escorts to send unlimited messages
+	if(bp_get_member_type($user_id) != 'client' || is_super_admin($user_id)) {
+		return $allowed;
+	}
+	
+	$participants = BP_Better_Messages()->functions->get_participants($thread_id);	
+		
+    if(count($participants['users']) !== 2) {
+		return $allowed;
+	}
+    unset($participants['users'][$user_id]);
+    reset($participants['users']);
+
+    $friend_id = key($participants['users']);
+      
+	//always allow sending to admin and to friends
+    if(is_super_admin($friend_id) || friends_check_friendship($user_id, $friend_id)) {
+		return $allowed;
+	}			
+	
+	$level = getLevel(true);
+	$messagecount = xprofile_get_field_data( "MessageCount" , $user_id);
+	//15 free messages per level
+	if($messagecount < ($level+1)*15) {
+		return true;
+	} else {		
+		 global $bp_better_messages_restrict_send_message;
+         $bp_better_messages_restrict_send_message['pmpro_restricted'] = sprintf(__('Your maximum of free messages is reached. Please upgrade by clicking <strong><a href="%s">here</a></strong>', 'bp-better-messages'), bp_loggedin_user_domain() . 'upgrade/');
+		 return false;
+	}	
+}
+
+add_filter( 'bp_better_messages_can_send_message', 'filter_bp_better_messages_can_send_message', 10, 3 ); 
+
 function getLevel($round=false) {
-	$level = ui_bp_get_field_for_current_user('Level', true);
-	if($round)
+	$level = xprofile_get_field_data('Level', bp_loggedin_user_id() );
+	if(empty($level)) {
+		return 0;
+	}
+	if($round) {
 		$level = ceil($level -0.5);
-	if(empty($level))
-		$level = 0;
+	}
+	
 	return $level;
 }
 	
@@ -310,7 +375,7 @@ function getLevelString() {
 	}
 }	
 	
-/*to be deleted, just for test*/
+/*to be deleted, force already done by friends_add_friend(....,true) see above*/
 function bp_auto_accept_friend_request( $friendship_id, $friendship_initiator_id, $friendship_friend_id ) {
        $friendship_status = BP_Friends_Friendship::check_is_friend( $friendship_initiator_id, $friendship_friend_id );
        if ( 'not_friends' == $friendship_status ) {
@@ -322,7 +387,7 @@ function bp_auto_accept_friend_request( $friendship_id, $friendship_initiator_id
 //add_action('friends_friendship_requested', 'bp_auto_accept_friend_request', 200, 3);
 
 function action_friends_friendship_accepted( $friendship_id, $friendship_initiator_id, $friendship_friend_id ) {
-	$friend_count = (int)ui_bp_get_field_for_current_user('Friend_count', true);
+	$friend_count = (int)xprofile_get_field_data('Friend_count', bp_loggedin_user_id());
 	xprofile_set_field_data('Friend_count', bp_loggedin_user_id(), $friend_count+1);
 }      
 

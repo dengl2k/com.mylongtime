@@ -90,7 +90,8 @@ add_action('wp_head', 'add_favicon_child');
 $sage_includes = [ 
    'lib/buddy_scripts.php', // Buddyboss Overrides
    'lib/pwa_scripts.php', // PWA
-   'lib/common_functions.php' // Common functions
+   'lib/common_functions.php', //Common functions
+   'lib/buddypress_api.php' // REST API
 ];
 
 foreach ($sage_includes as $file) {
@@ -114,8 +115,30 @@ function add_header_xua() {
 	header( 'Content-Security-Policy: frame-ancestors FULL-URL' );
 }
 add_action( 'send_headers', 'add_header_xua' );*/
+
+add_filter( 'template_include', function($template) {
+    return isset($_GET['map']) ? locate_template(['lib/map.php']) : $template ;
+}, 99 );
+add_filter( 'template_include', function($template) {
+    return isset($_GET['createtax']) ? locate_template(['createtaxonomy.php']) : $template ;
+}, 99 );
+
 //02.02.21
 function child_remove_parent_function() {
     remove_action( 'wp_head', 'boss_generate_option_css', 99 );
 }
 add_action( 'wp_loaded', 'child_remove_parent_function' );
+
+// SMTP Authentication
+add_action( 'phpmailer_init', 'send_smtp_email' );
+function send_smtp_email( $phpmailer ) {
+    $phpmailer->isSMTP();
+    $phpmailer->Host       = SMTP_HOST;
+    $phpmailer->SMTPAuth   = SMTP_AUTH;
+    $phpmailer->Port       = SMTP_PORT;
+    $phpmailer->Username   = SMTP_USER;
+    $phpmailer->Password   = SMTP_PASS;
+    $phpmailer->SMTPSecure = SMTP_SECURE;
+    $phpmailer->From       = SMTP_FROM;
+    $phpmailer->FromName   = SMTP_NAME;
+}

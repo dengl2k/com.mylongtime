@@ -21,9 +21,25 @@ function buddydev_register_member_types() {
     ) );
  
 }
-
+	
 add_filter( 'bp_after_has_members_parse_args', 'buddydev_exclude_users_by_member_type' );
  
+function wpse129106_bp_member_ids_by_field( $field_name, $field_value = '', $compare = '=' ) {
+    if ( empty( $field_name ) )
+        return '';
+
+    global $wpdb;
+
+    $field_id = xprofile_get_field_id_from_name( $field_name );
+
+    if ( !empty( $field_id ) ) {
+        $query = "SELECT user_id FROM " . $wpdb->prefix . "bp_xprofile_data WHERE field_id = " . $field_id .= " AND value " . $compare . " '" . $field_value . "'";
+	}
+    $custom_ids = $wpdb->get_col( $query );
+
+    return $custom_ids;
+}
+
 function buddydev_exclude_users_by_member_type( $args ) {
     // do not exclude in admin. 
     $args['member_type__in'] = array('client', 'escort');
@@ -39,13 +55,21 @@ function buddydev_exclude_users_by_member_type( $args ) {
     if ( ! is_array( $excluded ) ) {
         $excluded = explode( ',', $excluded );
     } 
+	$current_user_id = get_current_user_id();	
 	
-   	//Exclude admin
-    $excluded = array_merge( $excluded,  array( 1 ) );
+   	//Exclude admin and Pui
+    $excluded = array_merge( $excluded,  array( 1, 71 ) );
+	if($current_user_id == 71) {
+		//Exclude Karoll for Pui
+		$excluded = array_merge( $excluded,  array( 82 ) );
+	}
 	$args['exclude'] =  $excluded;
-	
+	if($current_user_id  != 71) {
+		$args['include'] = wpse129106_bp_member_ids_by_field("Active", "1");
+	}
+  
 	$member_filter = array( 'client' );
-	$member_type = bp_get_member_type( get_current_user_id() );
+	$member_type = bp_get_member_type( $current_user_id );
 	if($member_type == 'client')
 		 $member_filter = array( 'escort' );	
 
@@ -60,7 +84,7 @@ function filter_bp_get_total_member_count( $bp_core_get_active_member_count ) {
 	if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
 		return $bp_core_get_active_member_count;
     }
-	if ( bp_has_members() ) {
+	if ( bp_has_members('per_page=0') ) {
 		while ( bp_members() ) : bp_the_member();
 			$count++;
 		endwhile;
@@ -82,18 +106,37 @@ function buddydev_set_member_type( $user_id ) {
 add_action( 'bp_core_activated_user', 'buddydev_set_member_type', 0 );
 */
 
-//22.10.2018 Set default member type as soon as user registers
+//22.10.2018 Set default member type as soon as user registers, create default gallery
 add_action( 'user_register', 'default_member_type', 10, 1 );
 function default_member_type( $user_id ) {
-	if ( ! bp_get_member_type($user_id) ) {
-		
+	if ( ! bp_get_member_type($user_id) ) {		
 		bp_set_member_type( $user_id, 'client' );
 	}
+	$gallery = mpp_get_context_gallery( array(
+							'component'    => "members",
+							'component_id' => $user_id,
+							'user_id'      => $user_id,
+							'type'         => "photo",
+							'context'      => 'activity',
+						) );
+	
+	$default_status = mpp_get_default_status();
+	mpp_update_gallery_status( $gallery, $default_status );
+	mpp_update_gallery_component( $gallery, "members" );
+	mpp_update_gallery_type( $gallery, "photo" );
+	
 }
+
+//06.07.2021 Disable create gallery in profiles
+function filter_mpp_user_can_create_gallery($can_do, $component, $component_id) {
+	return is_super_admin();
+}
+
+add_filter( 'mpp_user_can_create_gallery', 'filter_mpp_user_can_create_gallery', 10, 3 ); 
 
 function wbcom_theme_alter_members_parse_args( $loop ) {
 	if ( bp_is_members_directory() ) {		
-			$loop['per_page'] = 50;
+		$loop['per_page'] = 50;
 	}	
 	return $loop;
 }

@@ -189,6 +189,13 @@ if(boss_get_option('boss_cover_profile')) {
 						} else {
 							remove_action( 'bp_member_header_actions', 'bp_send_public_message_button', 20 );
 						}
+						//05.02.21 Dont show public and private message button except admin
+						if(!is_super_admin()) {
+							remove_action( 'bp_member_header_actions', 'bp_send_public_message_button', 20 );
+							if ( !friends_check_friendship( bp_loggedin_user_id(), bp_displayed_user_id() ) ) {
+								remove_action( 'bp_member_header_actions', 'bp_send_private_message_button', 20 );
+							}							
+						}						
 						?>
 
 						<?php
@@ -208,7 +215,8 @@ if(boss_get_option('boss_cover_profile')) {
 									 bp_follow_add_follow_button();
 								 } elseif ( $showing == "friends" ) {
 									 if ( 'not_friends' == bp_is_friend( bp_displayed_user_id() ) ) {
-										 bp_add_friend_button();
+										 bp_send_private_message_button();
+										 bp_add_friend_button();										 
 									 } elseif ( bp_is_active( 'messages' ) ) {
 										 bp_send_private_message_button();
 									 }

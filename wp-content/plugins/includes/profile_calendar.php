@@ -37,8 +37,9 @@ function bp_custom_user_nav_item_screen() {
  * the function hooked to bp_template_content, this hook is in plugins.php
  */
 function bp_custom_screen_content() {
-    $fully_booked_days = array();    
-    $dateArray = array('[2019-06-05][2019-06-13]','[2019-07-15][2019-07-20]');
+    $fully_booked_days = array();  
+	$unavailability_field = xprofile_get_field_data( "Unavailability_Agency" , bp_displayed_user_id());	
+    $dateArray = str_getcsv($unavailability_field, ";");
 	$datestr = date("Y-m-d");
 	$today = new DateTime($datestr);
 	
@@ -74,12 +75,15 @@ function bp_custom_screen_content() {
                 array_push($blocked_days, $js_date);
             }
         }
-    }
-
+    }	
     echo '<h3 class="calendar-header">Calendar</h3>';
-    echo '<div id="companion-calendar" class="companion-calendar">';
+    echo '<div id="companion-calendar" class="companion-calendar">';	
     echo '<fieldset class="companion-date-picker">';
-    echo '<legend><span class="label"></legend>';
+    echo '<legend><span class="label">';
+	if(!is_super_admin() && !bp_is_my_profile()) {
+		echo 'Orange marked days are unavailable (busy days).';
+	}
+	echo '</span></legend>';
 	echo '<div id="datepicker" class="picker" data-fully-booked-days="' . esc_attr( wp_json_encode( $fully_booked_days ) )  . '" data-user-id="' . esc_attr( wp_json_encode( $user_id ) ) . '" data-modify="' . esc_attr( wp_json_encode( bp_is_my_profile() || is_super_admin()) ) .  '" data-blocked-days="' . esc_attr( wp_json_encode( $blocked_days ) ) .'"></div>';		
     echo '</fieldset>';
     echo '</div>';

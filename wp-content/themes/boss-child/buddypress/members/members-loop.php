@@ -33,6 +33,11 @@
 
 	<?php do_action( 'bp_before_directory_members_list' ); ?>
 
+	<?php if(!current_user_has_avatar()): ?>
+	
+	<div style="margin-top:20px;"><h3>To see the beautiful companions and their profiles, please upload a profile picture first</h3></div>
+	<a href="<?php echo bp_loggedin_user_domain() ?>profile/change-avatar"><img src="<?php echo bp_core_avatar_default();?>"></a>
+	<?php else : ?>
 	<ul id="members-list" class="item-list" role="main">
 
 	<?php while ( bp_members() ) : bp_the_member(); ?>
@@ -106,18 +111,19 @@
 						$member_id = bp_get_member_user_id();
 						$member_type = bp_get_member_type( get_current_user_id() );
 						if ( $showing == "friends" && bp_loggedin_user_id() != $member_id && $member_type != 'escort') {
-								$is_friend = bp_is_friend( $member_id );		
-								if ( $is_friend == 'not_friends' ) {							
-									$addlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/add-friend/' . $member_id . '/', 'friends_add_friend' );
-									echo '<div style="text-align:center" class="friendship-button not_friends generic-button" id="friendship-button-' . $member_id .'"><a href="' . $addlink . '" id="friend-' . $member_id . '" class="friendship-button not_friends add" rel="add" style="max-width:100%">Add Friend</a></div>';							
-								} else if ($is_friend == 'pending' ) {
-									$addlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/requests/cancel/' . $member_id . '/', 'friends_withdraw_friendship' );   
-									echo '<div style="text-align:center"class="friendship-button pending_friend generic-button" id="friendship-button-71" style="display: block;"><a href="' . $addlink . '" id="friend-' . $member_id . '" class="remove friendship-button pending_friend requested" rel="remove" style="max-width:100%">Cancel Friendship Request</a></div>';
-								} elseif ( bp_is_active( 'messages' ) ) {
+								if ( bp_is_active( 'messages' ) ) {
 									//$sendlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_messages_slug() . '/compose/?r=' . bp_core_get_username( $member_id) );							
 									//echo '<div style="text-align:center" id="send-private-message" class="generic-button"><a href="' . $sendlink . '" class="send-message" style="max-width:100%">Send Private message</a></div>';
 									//04.02 Commented out and added new for BP Better Messages
-									echo '<div class="generic-button bp-better-messages-private-message-link"><a href="' . BP_Better_Messages_Hooks::instance()->pm_link() . '" style="max-width:100%">' . __('Private Message', 'bp-better-message') . '</a></div>';
+									echo '<div class="message-icon"><a href="' . BP_Better_Messages_Hooks::instance()->pm_link() . '">' . __('Message', 'bp-better-message') . '</a></div>';
+								}
+								$is_friend = bp_is_friend( $member_id );		
+								if ( $is_friend == 'not_friends' ) {							
+									$addlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/add-friend/' . $member_id . '/', 'friends_add_friend' );
+									echo '<div class="friendship-button not_friends addfriend-icon" id="friendship-button-' . $member_id .'"><a href="' . $addlink . '" id="friend-' . $member_id . '" class="friendship-button not_friends add" rel="add" style="max-width:100%">Friend</a></div>';							
+								} else if ($is_friend == 'pending' ) {
+									$addlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_friends_slug() . '/requests/cancel/' . $member_id . '/', 'friends_withdraw_friendship' );   
+									echo '<div style="text-align:center" class="friendship-button pending_friend generic-button" id="friendship-button-71" style="display: block;"><a href="' . $addlink . '" id="friend-' . $member_id . '" class="remove friendship-button pending_friend requested" rel="remove" style="max-width:100%">Cancel Friendship Request</a></div>';
 								}
 							}							
 					?>
@@ -131,7 +137,7 @@
 	<?php endwhile; ?>
 
 	</ul>
-	
+	<?php endif; ?>
 	<?php do_action( 'bp_after_directory_members_list' ); ?>
 
 	<?php bp_member_hidden_fields(); ?>
