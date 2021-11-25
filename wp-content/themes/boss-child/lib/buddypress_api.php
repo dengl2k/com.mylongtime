@@ -194,17 +194,18 @@
 			$attach = ", failed to user:" . $user->data->user_nicename;			
 		} else {
 			//resend to admin
-			$attach_admin = ", to user:" . $user->data->user_nicename;		
+			/*$attach_admin = ", to user:" . $user->data->user_nicename;		
 			$push_data = wp_json_encode(array(
 					"notification" => array( 
 						"title" => $title . $attach_admin,			
 						"body" => $data['message'],
+						"sound" => "default",
 						"badge" => 1			
 			),
 			"to" => $admin_device_token
 			));
 			$args = get_wp_post_args($server_key, $push_data);	
-			$response = wp_remote_post( $remote_url, $args );			
+			$response = wp_remote_post( $remote_url, $args );*/		
 		}
 		
 		//Send Line Push
@@ -224,14 +225,11 @@
 		
 		$push_data = wp_json_encode(array(
 									"message" => $title . $attach_admin . ": " . $data['message'],
-									"username" => "michael_send",
-									"password" => "michael_send2021!",
-									"to_user" => "michael",
-									"token" => "2c09e38117"
+									"thread_token" => "NA==.MTE0.73da4f398ea695507617"
 									));	
 		$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://notify.dengl.com/wp-json/controller/v1/send_notification", $args );			
+		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );			
 		
 		//comment out firebasex payload
 		/*$data = wp_json_encode(array(
@@ -503,11 +501,11 @@ function upload_avatar($request) {
 		$messagecount = xprofile_get_field_data( "MessageCount" , $sender_id);		
 		xprofile_set_field_data( "MessageCount" , $sender_id, $messagecount+1);
 		
-		$search = array("Whats App", "WhatsApp", "WhattsAp", "WattsApp", "WattsAp", "Line", "number", "phone", "nr.", "facebook", "instagram", "00", "0 0", "+");
+		$search = array("Whats App", "WhatsApp", "WhattsAp", "WattsApp", "WattsAp", "Line", "number", "phone", "nr.", "facebook", "instagram", " id ", "@", "_at");
 		
 		$message = str_ireplace($search, "***", $message, $count);	
 
-		preg_match('/(?:(?:00|\+)\d{2}|0)[1-9]{6,}/', $message, $matches);
+		preg_match('/([\d ]){9,}/', $message, $matches);
 		
 		$message = str_ireplace($matches, "***", $message, $count2 );	
 		
@@ -1073,7 +1071,7 @@ function upload_avatar($request) {
 									));	
 		$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://notify.dengl.com/wp-json/controller/v1/send_notification", $args );		
+		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );		
 		return json_encode($response);
 		
 		//$code = ini_get('display_errors');
