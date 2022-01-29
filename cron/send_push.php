@@ -19,13 +19,13 @@ foreach($data as $new_user) {
 	
 	if(!empty($new_user)) {
 		$user = get_user_by( 'id', $new_user );	
-		$user_string = $user_string  . $user->display_name . " : app.mylongtime.com/menu/view-profile-tab/view-profile/" . $new_user . ", ";
+		$user_string = $user_string  . $user->display_name . " : app.mylongtime.com/menu/view-profile-tab/view-profile/" . $new_user . " ";
 	}
 }
 if($user_string  == "New user: ") {
 	return;
 }
-$user_string = substr($user_string, 0, -2);
+
 $blogusers = get_users( '' );
 foreach($blogusers as $member) {
 	$member_id = $member->ID;

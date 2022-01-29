@@ -337,11 +337,18 @@ li#gallery-my-gallery-personal-li + li#create-personal-li {
 div.mpp-item-actions.mpp-gallery-actions a.mpp-delete-gallery {
 	display: none;
 }
-
+/*11.12.21* Hide Receive message field in View Profile*/
+tr.field_18 {
+	display: none;
+}
 /*03.05.21 Hide Gallery and Image Status*/
 label[for=mpp-media-status], label[for=mpp-media-status] + div
 {
     display:none
+}
+/*04.01.22*/
+#members-dir-search {
+	width: 100%
 }
 /*29.07.21*/
 .message-icon:before {

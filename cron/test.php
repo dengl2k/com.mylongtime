@@ -8,5 +8,6 @@ if ( !defined('ABSPATH') ) {
 	/** Set up WordPress environment */
 	require_once( dirname( __FILE__ ) . '/../wp-load.php' );
 }
-$value = constant( 'BP_AVATAR_ORIGINAL_MAX_FILESIZE' ); 
+$value = DAY_IN_SECONDS;
+
 echo $value;

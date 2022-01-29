@@ -59,7 +59,7 @@ function login_user_json($request) {
 			wp_set_auth_cookie( $user_id, true);
 			bp_update_user_last_activity( $user_id, bp_core_current_time() );
 			do_action( 'wp_login', $user_login, $user );	
-			wp_redirect(bp_core_get_user_domain( $user_id ));
+			wp_redirect(bp_core_get_user_domain( $user_id ) . 'profile/edit' );
 			exit;	
 		}
 		else {

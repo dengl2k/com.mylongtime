@@ -47,10 +47,29 @@
 		return $user_id;		
 	}
 	
-	function line($request) {
-		$data = json_encode($request["events"]);
-		file_put_contents("Line.txt", $data, FILE_APPEND);
-		return new WP_REST_Response($data);
+	function update_line_token($request) {
+		$data = array(			
+			"line_token" => $request["token"]
+			);
+		$payload = wp_json_encode($data);
+		
+		return update_user_meta($request["user_id"], "app_data", $payload);
+	}
+	
+	function line($request) {		
+		
+		file_put_contents("Line.txt", json_encode($request["events"]), FILE_APPEND);
+		$json_obj = $request["events"];		
+		$token = $json_obj[0]["source"]["userId"];
+		
+		$push_data = wp_json_encode(array(
+									"message" => "New Line token: " . $token,
+									"thread_token" => "NA==.MTE0.73da4f398ea695507617"
+									));	
+		
+		$args = get_wp_post_args_intern($push_data);		 
+		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );
+		return new WP_REST_Response($token);				
 	}
 	
 	function send_line_push($user_id, $message) {
@@ -216,7 +235,7 @@
 		if(empty($line_token)) {						
 			$attach_admin = ", failed to user:" . $user->data->user_nicename;
 		} else {		
-			$attach_admin = ", to user :" . $user->data->user_nicename;					
+			$attach_admin = ", to user: " . $user->data->user_nicename;					
 		}								
 		
 		if(!empty($line_token)) {
@@ -814,12 +833,11 @@ function upload_avatar($request) {
 				if ( bp_profile_group_has_fields() ) {
 					while ( bp_profile_fields() ) {
 						bp_the_profile_field();					
-						$data[$group][$i] = array(						
+						$data[$group][bp_get_the_profile_field_name()] = array(						
 							"field_name" => bp_get_the_profile_field_name(),
 							"field_value" => bp_get_the_profile_field_value(),									
 							"field_type" => bp_get_the_profile_field_type()	
-						);
-						$i++;
+						);						
 					}
 				}
 			}
@@ -847,6 +865,53 @@ function upload_avatar($request) {
 		$the_member["gallery"] = $images;
 		return $the_member;
 	}
+	function get_member_data_short($display_id) {
+		
+		$the_member = array();	
+		$the_member["id"] = $display_id;				
+		$the_member["avatar"] = bp_core_fetch_avatar( 'type=full&html=false&item_id=' . $display_id );
+		$data = array();		
+		$groups = bp_xprofile_get_groups( array(
+			'user_id'                => $display_id,
+			'hide_empty_groups'      => true,
+			'hide_empty_fields'      => true,
+			'fetch_fields'           => true,
+			'fetch_field_data'       => true,
+		) );
+	
+		if ( ! empty( $groups ) ) {
+ 
+			foreach ( (array) $groups as $group ) {
+				if ( empty( $group->fields ) || $group->name == "Protected" ) {
+					continue;
+				}
+				foreach ( (array) $group->fields as $field ) {
+					$data[$group->name][$field->name] = array(					
+						'field_name'   	   => $field->name,
+						'field_value' 	   => $field->data->value,
+						'field_type'       => $field->type						
+					);
+				}
+			}
+		}
+		
+		$dob = $data['Personal Data']['Birthdate']['field_value'];
+		$age = "&#8203"; //no width space
+		if ($dob) {     
+			$age = getAge($dob) ." years";
+		}
+		$the_member["age"] = $age;
+		$the_member["receive_messages"] = unserialize($data['Personal Data']['Receive messages']['field_value'])[0] == 'Receive messages from girls';
+		unset($data['Personal Data']['Receive messages']);
+		unset($data['Personal Data']['Birthdate']);
+		$the_member["name"] = bp_core_get_user_displayname($display_id);
+		$the_member["country"] = $data['Personal Data']['Country']['field_value'];		
+		$images = get_image_array($display_id);	
+		$the_member["gallery"] = $images;
+		$the_member['fields'] = $data;
+		
+		return $the_member;
+	}
 	function get_members($request) {
 		$user_id = get_current_user_id();
 		
@@ -854,16 +919,37 @@ function upload_avatar($request) {
 			return $user_id;
 		}
 		wp_set_current_user($user_id);
-		$members = array();	
-		if ( bp_has_members( 'per_page=0')) {
+		$members = array();		
+		if ( bp_has_members( 'per_page=0&type=active')) {
 			while ( bp_members() ){
 				bp_the_member();			
 				$display_id = bp_get_member_user_id();				
-				$members[] =  get_member_data($display_id);
+				$members[] = get_member_data($display_id);
 			}
 		}
 		//Add current user to the end
 		$members[] = get_member_data($user_id);	
+		return new WP_REST_Response($members);
+	}	
+	
+	function get_members_short($request) {
+		$user_id = get_current_user_id();
+		
+		if(is_wp_error($user_id)) {
+			return $user_id;
+		}
+		wp_set_current_user($user_id);
+		
+		$members = array();
+		if ( bp_has_members('per_page=0&type=active')) {
+			while ( bp_members() ){
+				bp_the_member();			
+				$display_id = bp_get_member_user_id();
+				$members[] = get_member_data_short($display_id);
+			}
+		}
+		//Add current user to the end
+		$members[] = get_member_data_short($user_id);	
 		return new WP_REST_Response($members);
 	}
 	
@@ -1026,6 +1112,20 @@ function upload_avatar($request) {
 			'callback' => 'get_members'));}
 	);
 	add_action( 'rest_api_init', function () {
+		register_rest_route( 'controller/v2', '/get_members_short/', array(
+			'methods' => 'GET',
+			'permission_callback' => '__return_true',
+			'callback' => 'get_members_short'));}
+	);	
+	//TO DELETE
+	add_action( 'rest_api_init', function () {
+		register_rest_route( 'controller/v1', '/get_members_short/', array(
+			'methods' => 'GET',
+			'permission_callback' => '__return_true',
+			'callback' => 'get_members_short'));}
+	);
+	//END TO DELETE
+	add_action( 'rest_api_init', function () {
 		register_rest_route( 'controller/v2', '/send_data/', array(
 			'methods' => 'POST',
 			'permission_callback' => '__return_true',
@@ -1039,6 +1139,29 @@ function upload_avatar($request) {
 	);	
 	
 	function test_func($data) {
+		
+		return;
+		global $wpdb;	
+		foreach ( $wpdb->get_col( "SELECT ID FROM $wpdb->users" ) as $user_id ) {			
+			echo bp_update_user_last_activity($user_id, date('Y-m-d H:i:s'));
+		}
+		return;
+		
+		$profile_data = get_member_data_short( 218 );
+		echo json_encode($profile_data);
+		exit(0);
+		
+		// I am putting all the notifications to no by default
+		// you can set the value to 'yes' if you want that notification to be enabled.
+		do_action( 'bp_core_activated_user', 609, "", null );
+		return;
+	
+		$json = '[{"type":"follow","timestamp":1620463022101,"source":{"type":"user","userId":"Uca6ffde6f9c3f57c5be907bf657058dc"},"replyToken":"55ae96ed378147298f600a0337ef5d5b","mode":"active"}]';
+		$decoded = json_decode($json);
+		
+		echo $decoded[0]->source->userId;
+		
+		return;
 		
 		if(!get_current_user_id())
 			return "No user";
@@ -1122,6 +1245,13 @@ function upload_avatar($request) {
 			'methods' => 'POST',
 			'permission_callback' => '__return_true',
 			'callback' => 'line'));}
+	);
+	
+	add_action( 'rest_api_init', function () {
+		register_rest_route( 'controller/v1', '/update_line_token/', array(
+			'methods' => 'GET',
+			'permission_callback' => '__return_true',
+			'callback' => 'update_line_token'));}
 	);
 	
 	function create_gallery() {

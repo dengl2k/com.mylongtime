@@ -41,12 +41,13 @@ function wpse129106_bp_member_ids_by_field( $field_name, $field_value = '', $com
 }
 
 function buddydev_exclude_users_by_member_type( $args ) {
+		
     // do not exclude in admin. 
     $args['member_type__in'] = array('client', 'escort');
-	if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+	if ( is_admin() && !defined( 'DOING_AJAX' ) ) {
         return $args;
     }
-    if(is_super_admin()) {
+    if(is_super_admin()) {		
        return $args;
     }
 
@@ -63,11 +64,21 @@ function buddydev_exclude_users_by_member_type( $args ) {
 		//Exclude Karoll for Pui
 		$excluded = array_merge( $excluded,  array( 82 ) );
 	}
-	$args['exclude'] =  $excluded;
+	
 	if($current_user_id  != 71) {
 		$args['include'] = wpse129106_bp_member_ids_by_field("Active", "1");
 	}
-  
+	$filter = $_POST['filter'];
+	if(isset($filter) && $filter != "active" && $filter != "alphabetical" && filter != "newest" && $filter != "alllocations"){
+		$loc_filter = wpse129106_bp_member_ids_by_field('Location', '%'.$filter.'%', 'LIKE');
+		$active_members = $args['include'];
+		foreach($active_members as $val) {
+			if(!in_array($val, $loc_filter)) {
+				$excluded[] = $val;
+			}
+		}
+	}
+	$args['exclude'] = $excluded;
 	$member_filter = array( 'client' );
 	$member_type = bp_get_member_type( $current_user_id );
 	if($member_type == 'client')

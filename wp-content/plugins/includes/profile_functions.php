@@ -71,9 +71,9 @@ function getAge($dob) {
 	$age = floor($age / 31536000 );
 
 	//Make escort a bit younger than she is
-	$offset = ui_bp_get_field_for_current_user( "Birthdate_offset" );
+	/*$offset = ui_bp_get_field_for_current_user( "Birthdate_offset" );
 	if(!empty($offset))
-			$age -= $offset;
+			$age -= $offset;*/
 	return $age;
 }
 
