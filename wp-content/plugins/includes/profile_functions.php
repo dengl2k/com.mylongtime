@@ -63,17 +63,13 @@ add_action( 'bp_before_member_header_meta', 'ui_custom_profile_display' );
 add_action( 'bp_directory_members_item', 'ui_custom_profile_display' );
 
 function getAge($dob) {
-	//turn DoB into UNIX time so we can manipulate it
-	$age = strtotime($dob);
-	//get today's UNIX time and subtract today form it
-	$age = time() - $age;
-	//now we have the age in seconds, let's turn it into years
-	$age = floor($age / 31536000 );
-
+	$age_diff = date_diff(date_create($dob), date_create("now"));
+	$age = $age_diff->format("%y");
 	//Make escort a bit younger than she is
 	/*$offset = ui_bp_get_field_for_current_user( "Birthdate_offset" );
-	if(!empty($offset))
-			$age -= $offset;*/
+	if(!empty($offset)){
+		$age -= $offset;
+	}*/
 	return $age;
 }
 

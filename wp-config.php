@@ -58,6 +58,7 @@ define( 'DB_COLLATE', '' );
 //define('DISABLE_WP_CRON', true); //06.06.2020
 
 define('JWT_AUTH_SECRET_KEY', '5!L8:w#U,+W ,g&]-E1w>T3o8%TV$~hRzc:2=@sqZMp<8G;W/GQjP=%Ni50T%p(K');
+define('WP_ALLOW_REPAIR', true);
  
  
 /**#@+
@@ -159,8 +160,8 @@ if ( !defined( 'WP_CLI' ) ) {
     });
     // disable pingbacks
     add_filter( 'xmlrpc_methods', function( $methods ) {
-            unset( $methods['pingback.ping'] );
-            return $methods;
+		unset( $methods['pingback.ping'] );
+		return $methods;
     });
     add_filter( 'auto_update_translation', '__return_false' );
 }

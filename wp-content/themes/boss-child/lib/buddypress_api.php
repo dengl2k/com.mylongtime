@@ -1,7 +1,7 @@
 <?php
 
 	//Prevent MediaPress Notice when uploading images
-	error_reporting(E_ALL & ~E_NOTICE);
+	error_reporting(E_ALL & ~E_NOTICE);	
 	
 	function get_comp_availability( $data ) {    
 		$unavailability_field  = xprofile_get_field_data( "Unavailability" , $data['id']);  
@@ -182,6 +182,11 @@
 	}
 	function filter_xprofile_avatar_uploaded($user_id, $value) {		
 		
+		$avatar_url = bp_core_fetch_avatar( 'html=false&type=full&item_id=' . $user_id);
+		$avatar_url = basename($avatar_url);
+		if($avatar_url != 'gravatar.png') {
+			update_user_meta( $user_id, 'avatar_filename', $avatar_url);
+		}
 		if(bp_get_member_type($user_id) == "client" ) {
 			file_put_contents("/opt/bitnami/apps/wordpress/htdocs/new_users.txt", $user_id . ";", FILE_APPEND);	
 		}			
@@ -240,15 +245,18 @@
 		
 		if(!empty($line_token)) {
 			send_line_push($line_token, $title . ": " . $data['message'] . " Go To: https://app.mylongtime.com/menu/messages");	
-		}
-		
-		$push_data = wp_json_encode(array(
-									"message" => $title . $attach_admin . ": " . $data['message'],
-									"thread_token" => "NA==.MTE0.73da4f398ea695507617"
+		}	
+		if($data['send_websocket']) {
+			$push_data = wp_json_encode(array(
+									//"message" => $data['message'],
+									//"sender_id" => $data['id'],
+									//"thread_id" => $data['thread_id'],
+									"admin_message" => $title . $attach_admin . ": " . $data['message']
 									));	
-		$args = get_wp_post_args_intern($push_data);
+			$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );			
+			$response = wp_remote_post( "https://api.eyeot.com/send_message", $args );
+		}
 		
 		//comment out firebasex payload
 		/*$data = wp_json_encode(array(
@@ -481,14 +489,17 @@ function upload_avatar($request) {
 		$sender = get_user_by( 'id', $sender_id );
 		$title = "New message from " . $sender->data->user_nicename;
 		$recipients = $message_object->recipients;
-			
+		$i=0;	
 		foreach($recipients as $key => $rec) {
-					
+			//only send websocket message once, because via thread_id all receivers are automatically notified
 			$data = array(
 					'id' => $rec->user_id,
+					'thread_id' => $message_object->thread_id,
 					'title' => $title,
-					'message' => $message_object->message);	
+					'message' => $message_object->message,
+					'send_websocket' => $i==0);	
 			send_push($data);
+			$i++;
 		}
 	}
 
@@ -656,6 +667,8 @@ function upload_avatar($request) {
 	}
 	
 	function get_thread_messages($data) {
+		//Suppress outputs and warnings from BPBetter Messages, e.g. </span> for Thread 803
+		ob_start();
 		$user_id = get_user_from_token();			
 		if(is_wp_error($user_id)) {
 			return $user_id;
@@ -668,6 +681,7 @@ function upload_avatar($request) {
 				continue;
 			$ret[] = render_stack_override($stack, $user_id);	
 		}
+		ob_end_clean();
 		return new WP_REST_Response(array("success" => true, "data" => $ret), 200);
 	}
 	 
@@ -865,11 +879,33 @@ function upload_avatar($request) {
 		$the_member["gallery"] = $images;
 		return $the_member;
 	}
+	
+	function get_member_data_external($request) {
+		if(bp_get_member_type($request['id']) != "escort") {
+				return new WP_Error(
+                'unauthorized',
+                'Unauthorized',
+                array(
+                    'status' => 403,
+                )
+            );
+		}
+		$member_data = get_member_data_short($request['id']);
+		return new WP_REST_Response($member_data);
+	}
+		
 	function get_member_data_short($display_id) {
 		
 		$the_member = array();	
-		$the_member["id"] = $display_id;				
-		$the_member["avatar"] = bp_core_fetch_avatar( 'type=full&html=false&item_id=' . $display_id );
+		$the_member["id"] = $display_id;
+		$avatar_url = get_user_meta($display_id, 'avatar_filename', true);
+		if(empty($avatar_url)) {
+			$avatar_url = 'https://mylongtime.com/wp-content/themes/boss-child/images/gravatar.png';
+		} else{
+			$avatar_url = 'https://mylongtime.com/wp-content/uploads/avatars/' . $display_id . '/' . $avatar_url;
+		}
+		$the_member["avatar"] = $avatar_url;
+		//$the_member["avatar"] = bp_core_fetch_avatar( 'type=full&html=false&item_id=' . $display_id );
 		$data = array();		
 		$groups = bp_xprofile_get_groups( array(
 			'user_id'                => $display_id,
@@ -1116,15 +1152,13 @@ function upload_avatar($request) {
 			'methods' => 'GET',
 			'permission_callback' => '__return_true',
 			'callback' => 'get_members_short'));}
-	);	
-	//TO DELETE
+	);
 	add_action( 'rest_api_init', function () {
-		register_rest_route( 'controller/v1', '/get_members_short/', array(
+		register_rest_route( 'controller/v1', '/get_member_data/(?P<id>\d+)', array(
 			'methods' => 'GET',
 			'permission_callback' => '__return_true',
-			'callback' => 'get_members_short'));}
+			'callback' => 'get_member_data_external'));}
 	);
-	//END TO DELETE
 	add_action( 'rest_api_init', function () {
 		register_rest_route( 'controller/v2', '/send_data/', array(
 			'methods' => 'POST',
@@ -1138,8 +1172,8 @@ function upload_avatar($request) {
 			'callback' => 'test_func'));}
 	);	
 	
-	function test_func($data) {
-		
+	function test_func($data) {		
+	
 		return;
 		global $wpdb;	
 		foreach ( $wpdb->get_col( "SELECT ID FROM $wpdb->users" ) as $user_id ) {			
