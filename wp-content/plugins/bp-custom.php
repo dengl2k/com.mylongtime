@@ -130,6 +130,7 @@ add_filter(
 
 add_filter( 'jwt_auth_whitelist', function ( $endpoints ) {
     return array(
+		'/wp-json/jetpack/v4/*',
         '/wp-json/controller/v1/*',
 		'/wp-json/controller/v2/test',
 		'/wp-json/controller/v2/send_push/*',

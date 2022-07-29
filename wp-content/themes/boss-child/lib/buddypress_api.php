@@ -68,7 +68,7 @@
 									));	
 		
 		$args = get_wp_post_args_intern($push_data);		 
-		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );
+		$response = wp_remote_post( "https://eyeot.com/wp-json/controller/v1/send_notification", $args );
 		return new WP_REST_Response($token);				
 	}
 	
@@ -1228,7 +1228,7 @@ function upload_avatar($request) {
 									));	
 		$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );		
+		$response = wp_remote_post( "https://eyeot.com/wp-json/controller/v1/send_notification", $args );		
 		return json_encode($response);
 		
 		//$code = ini_get('display_errors');

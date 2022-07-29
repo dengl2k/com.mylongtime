@@ -80,7 +80,7 @@ function add_favicon_child() {
   echo '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">';
   echo '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">';
   //echo '<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">';
-  echo '<link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#5bbad5">';
+  echo '<link rel="mask-icon" href="safari-pinned-tab.svg" color="#5bbad5">';
   echo '<meta name="msapplication-TileColor" content="#da532c">';
   echo ' <meta name="theme-color" content="#ffffff">';
 }
