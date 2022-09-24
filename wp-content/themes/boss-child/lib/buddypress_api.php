@@ -529,7 +529,7 @@ function upload_avatar($request) {
 		$attach = ", failed to user:" . $friend->data->user_nicename;	
 		
 		$messagecount = xprofile_get_field_data( "MessageCount" , $sender_id);		
-		xprofile_set_field_data( "MessageCount" , $sender_id, $messagecount+1);
+		xprofile_set_field_data( "MessageCount" , $sender_id, intval($messagecount)+1);
 		
 		$search = array("Whats App", "WhatsApp", "WhattsAp", "WattsApp", "WattsAp", "Line", "number", "phone", "nr.", "facebook", "instagram", " id ", "@", "_at");
 		
@@ -1228,7 +1228,7 @@ function upload_avatar($request) {
 									));	
 		$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://eyeot.com/wp-json/controller/v1/send_notification", $args );		
+		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );		
 		return json_encode($response);
 		
 		//$code = ini_get('display_errors');
