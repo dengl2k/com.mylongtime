@@ -103,7 +103,7 @@ $table_prefix = 'wp_';
  */
  
 define( 'SMTP_USER',   'admin@mylongtime.com' );    // Username to use for SMTP authentication
-define( 'SMTP_PASS',   'Sers2kSers2k!' );       // Password to use for SMTP authentication
+define( 'SMTP_PASS',   'Sers2kSers2k' );       // Password to use for SMTP authentication
 define( 'SMTP_HOST',   'smtp.gmail.com' );    // The hostname of the mail server
 define( 'SMTP_FROM',   'admin@mylongtime.com' ); // SMTP From email address
 define( 'SMTP_NAME',   'Alex Priedl' );    // SMTP From name
@@ -165,3 +165,8 @@ if ( !defined( 'WP_CLI' ) ) {
     });
     add_filter( 'auto_update_translation', '__return_false' );
 }
+
+// Disables the block editor from managing widgets in the Gutenberg plugin.
+add_filter( 'gutenberg_use_widgets_block_editor', '__return_false' );
+// Disables the block editor from managing widgets.
+add_filter( 'use_widgets_block_editor', '__return_false' );

@@ -346,6 +346,12 @@ label[for=mpp-media-status], label[for=mpp-media-status] + div
 {
     display:none
 }
+
+/*13.09.22*/
+.acomment-avatar {
+	display:none!important;
+}
+
 /*04.01.22*/
 #members-dir-search {
 	width: 100%

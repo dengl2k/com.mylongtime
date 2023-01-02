@@ -60,30 +60,27 @@ function buddydev_exclude_users_by_member_type( $args ) {
 	
    	//Exclude admin and Pui
     $excluded = array_merge( $excluded,  array( 1, 71 ) );
-	if($current_user_id == 71) {
-		//Exclude Karoll for Pui
-		$excluded = array_merge( $excluded,  array( 82 ) );
-	}
 	
-	if($current_user_id  != 71) {
-		$args['include'] = wpse129106_bp_member_ids_by_field("Active", "1");
-	}
-	$filter = $_POST['filter'];
-	if(isset($filter) && $filter != "active" && $filter != "alphabetical" && filter != "newest" && $filter != "alllocations"){
-		$loc_filter = wpse129106_bp_member_ids_by_field('Location', '%'.$filter.'%', 'LIKE');
-		$active_members = $args['include'];
-		foreach($active_members as $val) {
-			if(!in_array($val, $loc_filter)) {
-				$excluded[] = $val;
+	$args['include'] = wpse129106_bp_member_ids_by_field("Active", "1");
+	
+	if(isset($_POST['filter'])) {
+		$filter = $_POST['filter'];
+		if($filter != "active" && $filter != "alphabetical" && $filter != "newest" && $filter != "alllocations"){
+			$loc_filter = wpse129106_bp_member_ids_by_field('Location', '%'.$filter.'%', 'LIKE');
+			$active_members = $args['include'];
+			foreach($active_members as $val) {
+				if(!in_array($val, $loc_filter)) {
+					$excluded[] = $val;
+				}
 			}
 		}
 	}
 	$args['exclude'] = $excluded;
 	$member_filter = array( 'client' );
 	$member_type = bp_get_member_type( $current_user_id );
-	if($member_type == 'client')
+	if($member_type == 'client') {
 		 $member_filter = array( 'escort' );	
-
+	}
     $args['member_type__in'] = $member_filter;
 	
     return $args;

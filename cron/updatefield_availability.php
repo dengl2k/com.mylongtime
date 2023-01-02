@@ -16,10 +16,11 @@ foreach($users as $user) {
 		echo $user->ID . ':';
 		$request = wp_remote_get( 'https://thaisinglereisen.com/wp-json/controller/v1/get_comp_availability/'. $user->ID ); 		
 		if( !is_wp_error( $request ) ) {			
-			$body = wp_remote_retrieve_body( $request );			
-			$unavailableDays = json_decode( $body );			
-			echo $unavailableDays . '<br>';		
-			xprofile_set_field_data( "Unavailability_Agency", $user->ID, $unavailableDays);			
+			$body = wp_remote_retrieve_body( $request );
+			$body = trim(str_replace('\n', '', (str_replace('\r', '', $body))));
+			$unavailableDays = json_decode( $body );
+			$ret = xprofile_set_field_data( "Unavailability_Agency", $user->ID, $unavailableDays);
+			echo $unavailableDays . ' Success: ' . $ret . '<br>';		
 		}
 	}
 	

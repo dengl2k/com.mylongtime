@@ -1,0 +1,9 @@
+server {
+    # Port to listen on, can also be set in IP:PORT format
+    listen 80 default_server;
+    root /opt/bitnami/projects/sample;
+    # Catch-all server block
+    # See: https://nginx.org/en/docs/http/server_names.html#miscellaneous_names
+    server_name _;
+    include  "/opt/bitnami/nginx/conf/bitnami/*.conf";
+}

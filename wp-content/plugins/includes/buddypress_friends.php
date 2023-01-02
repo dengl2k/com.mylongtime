@@ -155,7 +155,7 @@ function upgrade_bp_custom_user_nav_item_screen() {
  */
 function upgrade_bp_custom_screen_content() {
 	$data = date("Y-m-d H:i:s") . ": Upgrade page visited by user: " . bp_loggedin_user_id();
-	file_put_contents("/opt/bitnami/apps/wordpress/htdocs/Upgrade_Log.txt", $data.PHP_EOL, FILE_APPEND);
+	file_put_contents("/opt/bitnami/wordpress/Upgrade_Log.txt", $data.PHP_EOL, FILE_APPEND);
 
 	$level = getLevel();
 	if(($level-0.5)==floor($level)) {

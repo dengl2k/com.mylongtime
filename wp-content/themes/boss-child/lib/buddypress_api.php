@@ -188,7 +188,7 @@
 			update_user_meta( $user_id, 'avatar_filename', $avatar_url);
 		}
 		if(bp_get_member_type($user_id) == "client" ) {
-			file_put_contents("/opt/bitnami/apps/wordpress/htdocs/new_users.txt", $user_id . ";", FILE_APPEND);	
+			file_put_contents("/opt/bitnami/wordpress/new_users.txt", $user_id . ";", FILE_APPEND);	
 		}			
 	}
 	
@@ -519,7 +519,7 @@ function upload_avatar($request) {
 
         $friend_id = key($participants['users']);
        
-        if(is_super_admin($friend_id) || friends_check_friendship($sender_id, $friend_id)) {
+        if(is_super_admin($sender_id) || is_super_admin($friend_id) || friends_check_friendship($sender_id, $friend_id)) {
 			return;
 		}
 		//Friends have no restrictions and messagecount is not increased
@@ -529,8 +529,18 @@ function upload_avatar($request) {
 		$attach = ", failed to user:" . $friend->data->user_nicename;	
 		
 		$messagecount = xprofile_get_field_data( "MessageCount" , $sender_id);		
-		xprofile_set_field_data( "MessageCount" , $sender_id, $messagecount+1);
+		xprofile_set_field_data( "MessageCount" , $sender_id, intval($messagecount)+1);
 		
+		//In case there is a https:// URL do not filter because it can contain?number parameters in the URL
+		
+		$regex = '/\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|$!:,.;]*[A-Z0-9+&@#\/%=~_|$]/i';        
+		preg_match_all( $regex, $message, $urls );
+		if( !empty( $urls[0] ) ){
+			return;
+        }
+		
+		//End URL check
+			
 		$search = array("Whats App", "WhatsApp", "WhattsAp", "WattsApp", "WattsAp", "Line", "number", "phone", "nr.", "facebook", "instagram", " id ", "@", "_at");
 		
 		$message = str_ireplace($search, "***", $message, $count);	
@@ -930,18 +940,28 @@ function upload_avatar($request) {
 				}
 			}
 		}
+		$age = "&#8203"; //no width space		
 		
-		$dob = $data['Personal Data']['Birthdate']['field_value'];
-		$age = "&#8203"; //no width space
-		if ($dob) {     
-			$age = getAge($dob) ." years";
+		if(isset($data['Personal Data'])) {
+			if(isset($data['Personal Data']['Birthdate'])) {
+				$dob = $data['Personal Data']['Birthdate']['field_value'];
+				if ($dob) {     
+					$age = getAge($dob) ." years";
+				}
+			}
+		
+			if(isset($data['Personal Data']['Receive messages'])) {
+				$the_member["receive_messages"] = unserialize($data['Personal Data']['Receive messages']['field_value'])[0] == 'Receive messages from girls';
+			}
+			unset($data['Personal Data']['Receive messages']);
+			unset($data['Personal Data']['Birthdate']);
+			if(isset($data['Personal Data']['Country'])){
+				$the_member["country"] = $data['Personal Data']['Country']['field_value'];
+			}				
 		}
 		$the_member["age"] = $age;
-		$the_member["receive_messages"] = unserialize($data['Personal Data']['Receive messages']['field_value'])[0] == 'Receive messages from girls';
-		unset($data['Personal Data']['Receive messages']);
-		unset($data['Personal Data']['Birthdate']);
 		$the_member["name"] = bp_core_get_user_displayname($display_id);
-		$the_member["country"] = $data['Personal Data']['Country']['field_value'];		
+		
 		$images = get_image_array($display_id);	
 		$the_member["gallery"] = $images;
 		$the_member['fields'] = $data;
@@ -1228,7 +1248,7 @@ function upload_avatar($request) {
 									));	
 		$args = get_wp_post_args_intern($push_data);
 		 
-		$response = wp_remote_post( "https://eyeot.com/wp-json/controller/v1/send_notification", $args );		
+		$response = wp_remote_post( "https://ionifier.com/wp-json/controller/v1/send_notification", $args );		
 		return json_encode($response);
 		
 		//$code = ini_get('display_errors');

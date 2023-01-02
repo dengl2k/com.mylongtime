@@ -11,7 +11,7 @@ if ( !defined('ABSPATH') ) {
 	require_once( dirname( __FILE__ ) . '/../wp-load.php' );
 }
 
-$new_users = file_get_contents("/opt/bitnami/apps/wordpress/htdocs/new_users.txt");
+$new_users = file_get_contents("/opt/bitnami/wordpress/new_users.txt");
 $data = str_getcsv($new_users,";"); 
 
 $user_string = "New user: ";
@@ -41,4 +41,4 @@ foreach($blogusers as $member) {
 	}								
 }
 
-echo file_put_contents("/opt/bitnami/apps/wordpress/htdocs/new_users.txt","");
+echo file_put_contents("/opt/bitnami/wordpress/new_users.txt","");
