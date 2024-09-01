@@ -383,3 +383,7 @@ blockquotes {
 #buddypress div#item-header div.generic-button, #buddypress div#item-header a.button {
     margin: 10px 0 0 0 !important;
 }
+/*16.12.13*/
+li#requests-personal-li {
+	display: none !important;
+}

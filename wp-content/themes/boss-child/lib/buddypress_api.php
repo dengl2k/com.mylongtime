@@ -47,28 +47,22 @@
 		return $user_id;		
 	}
 	
-	function update_line_token($request) {
-		$data = array(			
-			"line_token" => $request["token"]
-			);
-		$payload = wp_json_encode($data);
-		
-		return update_user_meta($request["user_id"], "app_data", $payload);
-	}
-	
 	function line($request) {		
 		
 		file_put_contents("Line.txt", json_encode($request["events"]), FILE_APPEND);
 		$json_obj = $request["events"];		
-		$token = $json_obj[0]["source"]["userId"];
+		$token = $json_obj[0]["source"]["userId"];	
 		
 		$push_data = wp_json_encode(array(
-									"message" => "New Line token: " . $token,
-									"thread_token" => "NA==.MTE0.73da4f398ea695507617"
+									//"message" => $data['message'],
+									//"sender_id" => $data['sender_id'],
+									//"thread_id" => $data['thread_id'],
+									"admin_message" => "New Line token: " . $token
 									));	
-		
-		$args = get_wp_post_args_intern($push_data);		 
-		$response = wp_remote_post( "https://eyeot.com/wp-json/controller/v1/send_notification", $args );
+		$args = get_wp_post_args_intern($push_data);
+		 
+		$response = wp_remote_post( "https://api.eyeot.com/send_message", $args );
+			
 		return new WP_REST_Response($token);				
 	}
 	
@@ -244,19 +238,35 @@
 		}								
 		
 		if(!empty($line_token)) {
-			send_line_push($line_token, $title . ": " . $data['message'] . " Go To: https://app.mylongtime.com/menu/messages");	
+			//send_line_push($line_token, $title . ": " . $data['message'] . " Go To: https://app.mylongtime.com/menu/messages");	
+			update_user_meta($data['id'], "new_messages", $data['message_id']);
+			
 		}	
 		if($data['send_websocket']) {
 			$push_data = wp_json_encode(array(
 									//"message" => $data['message'],
-									//"sender_id" => $data['id'],
+									//"sender_id" => $data['sender_id'],
 									//"thread_id" => $data['thread_id'],
 									"admin_message" => $title . $attach_admin . ": " . $data['message']
 									));	
 			$args = get_wp_post_args_intern($push_data);
 		 
 			$response = wp_remote_post( "https://api.eyeot.com/send_message", $args );
+			
+			$push_data = wp_json_encode(array(
+									"password" => "hztjbbf653y8dndga86!4378x",
+									"sender_id" => $data['sender_id'],
+									"thread_id" => $data['thread_id'],
+									"date_sent" => $data['date_sent'],
+									"message_id" => $data['message_id'],
+									"message" => $data['message']
+									));	
+			$args = get_wp_post_args_intern($push_data);
+		 
+			$response = wp_remote_post( "https://api.mylongtime.com/transfer_message", $args );
 		}
+		
+		//Send App Push message
 		
 		//comment out firebasex payload
 		/*$data = wp_json_encode(array(
@@ -496,7 +506,10 @@ function upload_avatar($request) {
 					'id' => $rec->user_id,
 					'thread_id' => $message_object->thread_id,
 					'title' => $title,
+					'message_id' => $message_object->id,
 					'message' => $message_object->message,
+					'date_sent' => $message_object->date_sent,
+					'sender_id' => $sender_id,
 					'send_websocket' => $i==0);	
 			send_push($data);
 			$i++;
@@ -719,12 +732,14 @@ function upload_avatar($request) {
 		}
 		return new WP_REST_Response($ret, 200);
 	}
-	function get_new_messages($request) {
+	function get_new_messages($request) {		
 		
-		$user_id = get_user_from_token();			
+		$user_id = get_user_from_token();
+		
 		if(is_wp_error($user_id)) {
 			return $user_id;
 		}			
+		update_user_meta($user_id, "new_messages", 0);
 		wp_set_current_user($user_id);
 		
 		$_POST[ 'last_check' ] = $request['last_check'];
@@ -739,7 +754,8 @@ function upload_avatar($request) {
 		$user_id = get_user_from_token();			
 		if(is_wp_error($user_id)) {
 			return $user_id;
-		}			
+		}
+		update_user_meta($user_id, "new_messages", 0);			
 		wp_set_current_user($user_id);
 			
 		$_POST[ 'last_check' ] = $request['last_check'];
@@ -1018,11 +1034,244 @@ function upload_avatar($request) {
 		wp_set_password($request["pwd"], $user_id);
 	}
 	
+	
+	// generate a random, but not pretty, slug for a post type https://docs.wpvip.com/how-tos/filtering-wp_unique_post_slug/
+	add_filter( 'pre_wp_unique_post_slug', 'vip_set_log_slug', 10, 6 );
+
+	function vip_set_log_slug( $override, $slug, $post_ID, $post_status, $post_type, $post_parent ) {
+		if ( 'wp_log' === $post_type ) {
+			if ( $post_ID ) {
+				return $post_ID;
+			}
+			return uniqid( $post_type . '-' );
+		}
+		return $override;
+	}
+	
+	function get_unread() {
+		global $wpdb;
+
+            $bp_prefix = bp_core_get_table_prefix();           
+
+            /**
+             * Update users without activity
+             */
+            $user_without_last_activity = get_users( array(
+                'number'       => -1,
+                'meta_key'     => 'bpbm_last_activity',
+                'meta_compare' => 'NOT EXISTS',
+                'fields'       => 'ids'
+            ) );
+
+            if( count( $user_without_last_activity ) > 0 ){
+                foreach( $user_without_last_activity as $user_id ){
+                    $last_activity = get_user_meta( $user_id, 'last_activity', true );
+
+                    if( ! empty( $last_activity ) ){
+                        update_user_meta( $user_id, 'bpbm_last_activity', $last_activity );
+                    } else {
+                        update_user_meta( $user_id, 'bpbm_last_activity', gmdate( 'Y-m-d H:i:s',  0 ) );
+                    }
+                }
+            }
+
+            $time = gmdate( 'Y-m-d H:i:s', ( strtotime( bp_core_current_time() ) - 600 ) );
+			$time_ago = date('Y-m-d H:i:s', strtotime('-2 months'));
+            $unread_threads = $wpdb->get_results( "SELECT
+              {$wpdb->base_prefix}usermeta.meta_value AS last_visit,
+              {$wpdb->base_prefix}usermeta.user_id,
+              {$wpdb->base_prefix}bp_messages_recipients.thread_id,
+              {$wpdb->base_prefix}bp_messages_recipients.unread_count,
+              {$wpdb->base_prefix}bp_messages_messages.id AS last_id
+            FROM {$wpdb->base_prefix}bp_messages_recipients
+              INNER JOIN {$wpdb->base_prefix}usermeta
+                ON {$wpdb->base_prefix}bp_messages_recipients.user_id = {$wpdb->base_prefix}usermeta.user_id
+              INNER JOIN {$wpdb->base_prefix}bp_messages_messages
+                ON {$wpdb->base_prefix}bp_messages_messages.thread_id = {$wpdb->base_prefix}bp_messages_recipients.thread_id
+                  AND {$wpdb->base_prefix}bp_messages_messages.id = (
+                      SELECT MAX(m2.id)
+                      FROM {$wpdb->base_prefix}bp_messages_messages m2 
+                      WHERE m2.thread_id = {$wpdb->base_prefix}bp_messages_recipients.thread_id
+                  )
+            WHERE {$wpdb->base_prefix}usermeta.meta_key = 'bpbm_last_activity'
+            AND STR_TO_DATE({$wpdb->base_prefix}usermeta.meta_value, '%s') < " . $wpdb->prepare('%s', $time) . "
+            AND {$wpdb->base_prefix}bp_messages_recipients.unread_count > 0
+			AND {$wpdb->base_prefix}bp_messages_messages.date_sent > " . $wpdb->prepare('%s', $time_ago) . "
+            AND {$wpdb->base_prefix}bp_messages_recipients.is_deleted = 0
+            GROUP BY {$wpdb->base_prefix}usermeta.user_id,
+                     {$wpdb->base_prefix}bp_messages_recipients.thread_id" );
+
+            $last_notified = array();
+
+            foreach ( array_unique( wp_list_pluck( $unread_threads, 'user_id' ) ) as $user_id ) {
+                $meta = get_user_meta( $user_id, 'bp-better-messages-last-notified', true );
+                $last_notified[ $user_id ] = ( !empty( $meta ) ) ? $meta : array();
+            }
+
+            $gmt_offset = get_option('gmt_offset') * 3600;
+
+            foreach ( $unread_threads as $thread ) {
+                $user_id = $thread->user_id;
+                $thread_id = $thread->thread_id;
+
+                $muted_threads = BP_Better_Messages()->functions->get_user_muted_threads( $user_id );
+                if( isset( $muted_threads[ $thread_id ] ) ){
+                    continue;
+                }
+
+                if ( function_exists('bp_send_email') && get_user_meta( $user_id, 'notification_messages_new_message', true ) == 'no' ) {
+                    $last_notified[ $user_id ][ $thread_id ] = $thread->last_id;
+                    continue;
+                }
+
+                $ud = get_userdata( $user_id );
+
+                if ( ! isset( $last_notified[ $user_id ][ $thread_id ] ) || ( $thread->last_id > $last_notified[ $user_id ][ $thread_id ] ) ) {
+
+                    $user_last = ( isset( $last_notified[ $user_id ][ $thread_id ] ) ) ? $last_notified[ $user_id ][ $thread_id ] : 0;
+
+                    $messages = array_reverse( $wpdb->get_results( $wpdb->prepare( "
+                        SELECT
+                          {$bp_prefix}bp_messages_messages.message,
+                          {$bp_prefix}bp_messages_messages.sender_id,
+                          {$bp_prefix}bp_messages_messages.subject,
+                          {$bp_prefix}bp_messages_messages.date_sent
+                        FROM {$bp_prefix}bp_messages_messages
+                        WHERE {$bp_prefix}bp_messages_messages.thread_id = %d
+                        AND {$bp_prefix}bp_messages_messages.id > %d 
+                        ORDER BY id DESC
+                        LIMIT 0, %d
+                    ", $thread->thread_id, $user_last, $thread->unread_count ) ) );
+
+                    if ( empty( $messages ) ) {
+                        continue;
+                    }
+
+                    foreach($messages as $index => $message){
+                        if( $message->message ){
+                            $is_sticker = strpos( $message->message, '<span class="bpbm-sticker">' ) !== false;
+                            if( $is_sticker ){
+                                $message->message = __('Sticker', 'bp-better-messages');
+                            }
+                        }
+                    }
+
+                    if ( empty( $messages ) ) {
+                        continue;
+                    }
+
+                    $messageRaw = '';
+                    $messageHtml = '<table style="margin: 0!important;width: 100%;"><tbody>';
+                    $last_id = 0;
+                    foreach ( $messages as $message ) {
+                        $sender = get_userdata( $message->sender_id );
+
+                        $timestamp = strtotime( $message->date_sent ) + $gmt_offset;
+                        $time_format = get_option( 'time_format' );
+
+                        if ( gmdate( 'Ymd' ) != gmdate( 'Ymd', $timestamp ) ) {
+                            $time_format .= ' ' . get_option( 'date_format' );
+                        }
+
+                        $time = wp_strip_all_tags( stripslashes( date_i18n( $time_format, $timestamp ) ) );
+                        $author = wp_strip_all_tags( stripslashes( sprintf( __( '%s wrote:', 'bp-better-messages' ), $sender->display_name ) ) );
+                        $message = wp_strip_all_tags( stripslashes( $message->message ) );
+
+                        if ( $last_id == 0 || $last_id != $sender->ID ) {
+                            $messageHtml .= '<tr><td colspan="2"><b>' . $author . '</b></td></tr>';
+                            $messageRaw .= "$author\n";
+                        }
+
+                        $messageRaw .= "$time\n$message\n\n";
+
+                        $messageHtml .= '<tr>';
+                        $messageHtml .= '<td style="padding-right: 10px;">' . $message . '</td>';
+                        $messageHtml .= '<td style="width: 1px;white-space: nowrap;vertical-align: top;"><i>' . $time . '</i></td>';
+                        $messageHtml .= '</tr>';
+
+                        $last_id = $sender->ID;
+                    }
+
+                    $messageHtml .= '</tbody></table>';
+
+
+                    if( function_exists('bp_notifications_add_notification') ){
+                        bp_notifications_add_notification( array(
+                            'user_id'           => $user_id,
+                            'item_id'           => $thread->last_id,
+                            'secondary_item_id' => $last_id,
+                            'component_name'    => buddypress()->messages->id,
+                            'component_action'  => 'new_message',
+                            'date_notified'     => bp_core_current_time(),
+                            'is_new'            => 1
+                        ) );
+                    }
+
+                    if( function_exists('bp_send_email') ){
+                        $args = array(
+                            'tokens' =>
+                                apply_filters( 'bp_better_messages_notification_tokens', array(
+                                    'messages.html' => $messageHtml,
+                                    'messages.raw'  => $messageRaw,
+                                    'sender.name'   => $sender->display_name,
+                                    'thread.id'     => $thread_id,
+                                    'thread.url'    => esc_url( BP_Better_Messages()->functions->get_link( $user_id ) . '?thread_id=' . $thread_id ),
+                                    'subject'       => sanitize_text_field( stripslashes( $messages[ 0 ]->subject ) ),
+                                    'unsubscribe'   => esc_url( bp_email_get_unsubscribe_link( array(
+                                        'user_id'           => $user_id,
+                                        'notification_type' => 'messages-unread',
+                                    ) ) )
+                                ),
+                                    $ud, // userdata object of receiver
+                                    $sender, // userdata object of sender
+                                    $thread_id
+                                ),
+                        );
+
+                        bp_send_email( 'messages-unread-group', $ud, $args );
+						file_put_contents("/opt/bitnami/wordpress/mails_sent.txt", $user_id . ";", FILE_APPEND);
+                    } else {
+                        $user = get_userdata( $user_id );
+
+                        $subject = sprintf( _x( 'You have unread messages: "%s"', 'Email notification header for non BuddyPress websites', 'bp-better-messages' ), sanitize_text_field( stripslashes( $messages[ 0 ]->subject ) ) );
+                        $plainHeader  = sprintf( _x( 'Hi %s', 'Email notification header for non BuddyPress websites', 'bp-better-messages' ), $user->display_name ) . ",\r\n";
+                        $plainHeader .= $subject . "\r\n";
+                        $plainHeader .= "\r\n\r\n\r\n";
+
+
+                        $plainFooter  = "\r\n\r\n\r\n";
+                        $plainFooter .= _x( "Go to the discussion to reply or catch up on the conversation:", 'Email notification header for non BuddyPress websites', 'bp-better-messages') . "\r\n";
+                        $plainFooter .= esc_url( BP_Better_Messages()->functions->get_link( $user_id ) . '?thread_id=' . $thread_id );
+
+                        $messageRaw = $plainHeader . $messageRaw . $plainFooter;
+                        wp_mail( $user->user_email, $subject, $messageRaw );
+						file_put_contents("/opt/bitnami/wordpress/mails_sent.txt", $user_id . ";", FILE_APPEND);
+                    }
+
+                    $last_notified[ $user_id ][ $thread_id ] = $thread->last_id;
+                }
+
+            }
+
+            foreach ( $last_notified as $user_id => $threads ) {
+                update_user_meta( $user_id, 'bp-better-messages-last-notified', $threads );
+            }
+						 
+		return json_encode($last_notified);
+	}
+	
 	add_action( 'rest_api_init', function () {
 	register_rest_route( 'controller/v1', '/get_comp_availability/(?P<id>\d+)', array(
 		'methods' => 'GET',
 		'permission_callback' => '__return_true',
 		'callback' => 'get_comp_availability'));}
+			
+	);
+	add_action( 'rest_api_init', function () {
+	register_rest_route( 'controller/v1', '/get_unread', array(
+		'methods' => 'GET',
+		'permission_callback' => '__return_true',
+		'callback' => 'get_unread'));}
 			
 	);
 	add_action( 'rest_api_init', function () {
@@ -1299,13 +1548,6 @@ function upload_avatar($request) {
 			'methods' => 'POST',
 			'permission_callback' => '__return_true',
 			'callback' => 'line'));}
-	);
-	
-	add_action( 'rest_api_init', function () {
-		register_rest_route( 'controller/v1', '/update_line_token/', array(
-			'methods' => 'GET',
-			'permission_callback' => '__return_true',
-			'callback' => 'update_line_token'));}
 	);
 	
 	function create_gallery() {

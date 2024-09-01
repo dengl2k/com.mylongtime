@@ -40,8 +40,8 @@ if(boss_get_option('boss_cover_profile')) {
 
                 <div id="item-header-content">
                     <div class="basic">
-                        <h1><?php echo bp_get_displayed_user_fullname(); ?></h1><span class="sep"><?php _e( ', ', 'boss' ); ?></span>
-                        <h2 class="user-nicename">@<?php bp_is_active( 'activity' ) ? bp_displayed_user_mentionname() : bp_displayed_user_username(); ?></h2>
+                        <h1><?php echo bp_get_displayed_user_fullname(); ?><!--</h1><span class="sep">--><?php //_e( ', ', 'boss' ); ?><!--</span>-->
+                        <!--<h2 class="user-nicename">@<?php bp_is_active( 'activity' ) ? bp_displayed_user_mentionname() : bp_displayed_user_username(); ?></h2>-->
 						<?php
 						$show			 = boss_get_option( 'boss_cover_profile' );
 						$address_field	 = boss_get_option( 'boss_misc_profile_field_address' );

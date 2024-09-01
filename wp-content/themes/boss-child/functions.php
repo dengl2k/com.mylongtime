@@ -10,6 +10,7 @@
  *
  * @since Boss Child Theme 1.0.0
  */
+
 function boss_child_theme_setup()
 {
   /**
@@ -142,3 +143,5 @@ function send_smtp_email( $phpmailer ) {
     $phpmailer->From       = SMTP_FROM;
     $phpmailer->FromName   = SMTP_NAME;
 }
+//TEMPORARY 11.12.2023
+//define('DISABLE_WP_CRON', true);

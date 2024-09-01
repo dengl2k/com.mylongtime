@@ -76,10 +76,10 @@ function buddydev_exclude_users_by_member_type( $args ) {
 		}
 	}
 	$args['exclude'] = $excluded;
-	$member_filter = array( 'client' );
+	$member_filter = array( 'escort' );
 	$member_type = bp_get_member_type( $current_user_id );
-	if($member_type == 'client') {
-		 $member_filter = array( 'escort' );	
+	if($member_type == 'escort') {
+		 $member_filter = array( 'client' );	
 	}
     $args['member_type__in'] = $member_filter;
 	

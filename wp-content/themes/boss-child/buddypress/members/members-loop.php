@@ -115,7 +115,7 @@
 									//$sendlink = wp_nonce_url( bp_loggedin_user_domain() . bp_get_messages_slug() . '/compose/?r=' . bp_core_get_username( $member_id) );							
 									//echo '<div style="text-align:center" id="send-private-message" class="generic-button"><a href="' . $sendlink . '" class="send-message" style="max-width:100%">Send Private message</a></div>';
 									//04.02 Commented out and added new for BP Better Messages
-									echo '<div class="message-icon"><a href="' . BP_Better_Messages_Hooks::instance()->pm_link() . '">' . __('Message', 'bp-better-message') . '</a></div>';
+									echo '<div class="message-icon"><a href="' . BP_Better_Messages_Hooks::instance()->pm_link() . '">' . __('Send Message', 'bp-better-message') . '</a></div>';
 								}
 								$is_friend = bp_is_friend( $member_id );		
 								if ( $is_friend == 'not_friends' ) {							

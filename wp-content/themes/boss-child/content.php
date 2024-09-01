@@ -78,7 +78,8 @@
 							}
 							else {
 								echo '<a href="' . esc_url( get_permalink(6) ) . '"><p style="font-size:18px">Feel free to browse the profiles of our beautiful <u>Thai travel companions</u>.</p>
-								<p><input id="addHomeBtn" class="btn btn-primary" type="button" value="Install App on your Phone"></p></a>
+								<p><input class="btn btn-primary" type="button" value="Go to the girls"></p>
+								<p><input id="addHomeBtn" class="btn btn-secondary" type="button" value="Install App on your Phone"></p></a>
 								<h2>How does it work</h2>
 								<p style="font-size:18px">Our platform and the first private messages are free. However, unlimited messaging is charged, as we have high costs to maintain our servers. You can be sure that every girl on our platform will be happy to join you during your holiday. By upgrading your account to the next level you can exchange phone numbers with 3 beautiful Thai girls and send unlimited messages.</p>';
 								echo '<a style="max-width:100%" id="upgrade-' . esc_attr( $friend_id ) . '"  rel="upgrade" href="' . bp_loggedin_user_domain() . 'upgrade/' . '"><p><input class="btn btn-primary" type="button" value="Upgrade account"></p></a>';

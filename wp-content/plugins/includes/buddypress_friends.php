@@ -156,11 +156,13 @@ function upgrade_bp_custom_user_nav_item_screen() {
 function upgrade_bp_custom_screen_content() {
 	$data = date("Y-m-d H:i:s") . ": Upgrade page visited by user: " . bp_loggedin_user_id();
 	file_put_contents("/opt/bitnami/wordpress/Upgrade_Log.txt", $data.PHP_EOL, FILE_APPEND);
-
+	$extra_html = "";
+	
 	$level = getLevel();
 	if(($level-0.5)==floor($level)) {
 		$btn_html = '<span class="upgrade-personal-inprogress">' . __('Upgrade in progress', 'buddypress') . '</span>';
 		$info_text = __('Upgrade request was sent already', 'buddypress');
+		$extra_html = '<p><div id="upgrade-send" class="generic-button" style="margin-top:5px"><a style="background-color: #000" href="#">' . __( 'Resend Upgrade request', 'buddypress' ) . '</a></div></p>';
 	}
 	else {
 		$btn_html = '<p><div id="upgrade-send" class="generic-button"><a href="#">' . __( 'Upgrade your account', 'buddypress' ) . '</a></div></p>';
@@ -170,6 +172,7 @@ function upgrade_bp_custom_screen_content() {
 	echo '<h3 class="upgrade-header" style="position:relative;top:-30px;margin:0">' .  __('Upgrade your account', 'buddypress') . '</h3>';	
 	echo '<h4 class="upgrade-header">' .  __('Your current level is: ', 'buddypress') .  getLevelString() . '</h4><br>';	
 	echo $btn_html;
+	echo $extra_html;
 	echo '<p><span id="upgrade-result" class="label label-info">' . $info_text . '</span></p>';	
 	
 	?>	
@@ -233,11 +236,11 @@ function wpse_sendmail() {
 	$body = 'New upgrade request by User: ' . bp_core_get_username(bp_loggedin_user_id()) . ' User ID: ' . bp_loggedin_user_id();
 	$headers = array('Content-Type: text/html; charset=UTF-8');
 	$currentLevel = getLevel();
-	//don't send twice
+	//don't increase twice
 	if(($currentLevel-0.5)!=floor($currentLevel)) {
-		xprofile_set_field_data('Level', bp_loggedin_user_id(), getLevel() + 0.5);
-		wp_mail( $to, $subject, $body, $headers );
-	}	
+		xprofile_set_field_data('Level', bp_loggedin_user_id(), getLevel() + 0.5);		
+	}
+	wp_mail( $to, $subject, $body, $headers );
 }
 add_action( 'wp_ajax_siteWideMessage', 'wpse_sendmail' );
 

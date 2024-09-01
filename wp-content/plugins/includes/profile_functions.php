@@ -60,7 +60,7 @@ function bpfr_hide_visibility_tab() {
 add_action( 'bp_ready', 'bpfr_hide_visibility_tab' );
 
 add_action( 'bp_before_member_header_meta', 'ui_custom_profile_display' );
-add_action( 'bp_directory_members_item', 'ui_custom_profile_display' );
+add_action( 'bp_directory_members_item', 'ui_custom_profile_display_other' );
 
 function getAge($dob) {
 	$age_diff = date_diff(date_create($dob), date_create("now"));
@@ -77,6 +77,21 @@ function ui_custom_profile_display() {
 	// this is where the magic happens
 
 	$dob = ui_bp_get_field_for_current_user( "Birthdate" );
+	//let's double check if it's empty
+	if ($dob) {
+
+		$age = getAge($dob);
+
+		echo $age." years";
+	} else{
+		echo "&#8203";//no width space
+	}
+}
+
+function ui_custom_profile_display_other() {
+	// this is where the magic happens
+
+	$dob = ui_bp_get_field_for_current_user_other( "Birthdate" );
 	//let's double check if it's empty
 	if ($dob) {
 
@@ -111,13 +126,30 @@ function ui_bp_get_field_for_current_user( $field, $logged_in_user = false ) {
 	return bp_get_profile_field_data( $args );
 }
 
+//helper function
+function ui_bp_get_field_for_current_user_other( $field, $logged_in_user = false ) {
+
+	
+	$user_id = bp_get_member_user_id();
+	
+	//usually we need the UID as well, but since this runs into the profile page we won't need it
+	$args = array(
+		'field'   => $field, // Field name or ID
+		 'user_id' => $user_id
+	);
+
+	//just return whatever the BP function finds
+	return bp_get_profile_field_data( $args );
+}
+
+
 function filter_bp_get_the_profile_field_value($value, $field_type, $field_id ) {
     if($field_id == 2)
 		return $value . " kg";
 	else if ($field_id == 3)
 		return $value . " cm";
 	else if ($field_id == 4) {
-		$dob = ui_bp_get_field_for_current_user( "Birthdate" );
+		$dob = ui_bp_get_field_for_current_user_other( "Birthdate" );
 		//let's double check if it's empty
 		if ($dob) {
 			$age = getAge($dob);
@@ -249,3 +281,47 @@ function bp_xprofile_add_custom_field() {
 // add action for plugin loaded
 
 add_action( 'init', 'bp_xprofile_add_custom_field' );
+
+function userLineTokenForm(WP_User $user) {
+?>
+<h2>Line Token</h2>
+	<table class="form-table">
+		<tr>
+			<th><label for="line_token">Line Token</label></th>
+			<td>
+				<input
+					
+					value="<?php echo json_decode(get_user_meta($user->ID, "app_data", true), true)["line_token"]; ?>"
+					name="line_token"
+					id="line_token"
+				>
+				<span class="description">Line API Token</span>
+			</td>
+		</tr>
+	</table>
+<?php
+}
+add_action('show_user_profile', 'userLineTokenForm'); // editing your own profile
+add_action('edit_user_profile', 'userLineTokenForm'); // editing another user
+
+
+function userMetaLineTokenSave($userId) {
+	if (!current_user_can('edit_user', $userId)) {
+		return;
+	}
+	$data = get_user_meta($user->ID, "app_data", true);
+	if(!$data) {
+		$data = array(			
+		"line_token" => $_REQUEST['line_token']);
+	}
+	else {
+		$data["line_token"] = $_REQUEST['line_token'];
+	}
+	
+	$payload = wp_json_encode($data);
+		
+	update_user_meta($userId, "app_data", $payload);
+
+}
+add_action('personal_options_update', 'userMetaLineTokenSave');
+add_action('edit_user_profile_update', 'userMetaLineTokenSave');
