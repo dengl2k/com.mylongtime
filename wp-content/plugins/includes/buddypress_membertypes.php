@@ -24,7 +24,7 @@ function buddydev_register_member_types() {
 	
 add_filter( 'bp_after_has_members_parse_args', 'buddydev_exclude_users_by_member_type' );
  
-function wpse129106_bp_member_ids_by_field( $field_name, $field_value = '', $compare = '=' ) {
+function bp_member_ids_by_field( $field_name, $field_value = '', $compare = '=' ) {
     if ( empty( $field_name ) )
         return '';
 
@@ -61,12 +61,12 @@ function buddydev_exclude_users_by_member_type( $args ) {
    	//Exclude admin and Pui
     $excluded = array_merge( $excluded,  array( 1, 71 ) );
 	
-	$args['include'] = wpse129106_bp_member_ids_by_field("Active", "1");
+	$args['include'] = bp_member_ids_by_field("Active", "1");
 	
 	if(isset($_POST['filter'])) {
 		$filter = $_POST['filter'];
 		if($filter != "active" && $filter != "alphabetical" && $filter != "newest" && $filter != "alllocations"){
-			$loc_filter = wpse129106_bp_member_ids_by_field('Location', '%'.$filter.'%', 'LIKE');
+			$loc_filter = bp_member_ids_by_field('Location', '%'.$filter.'%', 'LIKE');
 			$active_members = $args['include'];
 			foreach($active_members as $val) {
 				if(!in_array($val, $loc_filter)) {

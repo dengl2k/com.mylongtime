@@ -102,22 +102,18 @@ function bpcodex_change_notifications_nav_position() {
 }
 add_action( 'bp_setup_nav', 'bpcodex_change_notifications_nav_position', 100 );
 
-function bpdev_set_email_notifications_preference( $user_id, $key, $user ) {
-	if(bp_get_member_type($user_id) == "escort") {
-		return;
-	}
-    // I am putting all the notifications to no by default
-    // you can set the value to 'yes' if you want that notification to be enabled.
+function set_fields_on_register( $user_id ) {
+	    
     $settings_keys = array(      
-        'notification_messages_new_message'        => 'no'
+        'notification_messages_new_message'        => 'yes'
     ); 
     foreach ( $settings_keys as $setting => $preference ) {
 	
         bp_update_user_meta( $user_id, $setting, $preference );
     } 
 }
-//hook is not called, need to be checked, change to 'user_register' like in ionifier?
-//add_action( 'bp_core_activated_user', 'bpdev_set_email_notifications_preference', 10, 3 );
+add_action( 'user_register', 'set_fields_on_register' );
+
 
 add_filter(
     'jwt_auth_expire',

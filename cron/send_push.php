@@ -32,6 +32,10 @@ foreach($blogusers as $member) {
 	if($member_id != 1 && bp_get_member_type($member_id) != "escort") {
 		continue;
 	}
+	$is_active = xprofile_get_field_data( "Active" , $member_id);
+	if(!$is_active) {
+		continue;
+	}
 	$app_data = json_decode(get_user_meta($member_id , "app_data", true), true);		
 	if(!empty($app_data)) {
 		$line_token = $app_data["line_token"];	
